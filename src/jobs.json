@@ -97,6 +97,20 @@
         "contactPhone": "12122313"
       },
       "id": "1537"
+    },
+    {
+      "id": "aabc",
+      "type": "Part-Time",
+      "title": "full stack",
+      "description": "kerjaaa",
+      "salary": "Over $200K",
+      "location": "bandung",
+      "company": {
+        "name": "ra company",
+        "description": "perusahaan sukses",
+        "contactEmail": "asa@mail.com",
+        "contactPhone": "123456789"
+      }
     }
   ]
 }

@@ -33,7 +33,7 @@ const deleteJob = async () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`/api/jobs/${jobId}`);
+    const response = await axios.get(`http://localhost:8000/job/${jobId}`);
     state.job = response.data;
   } catch (error) {
     console.error("Error fetching Job API", error);
@@ -85,25 +85,19 @@ onMounted(async () => {
           <div class="bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-xl font-bold mb-6">Company Info</h3>
 
-            <h2 class="text-2xl">{{ state.job.company.name }}</h2>
+            <h2 class="text-2xl">nama perusahaan</h2>
 
-            <p class="my-2">
-              {{ state.job.company.description }}
-            </p>
+            <p class="my-2">deskripsi perusahaan</p>
 
             <hr class="my-4" />
 
             <h3 class="text-xl">Contact Email:</h3>
 
-            <p class="my-2 bg-green-100 p-2 font-bold">
-              {{ state.job.company.contactEmail }}
-            </p>
+            <p class="my-2 bg-green-100 p-2 font-bold">email perusahaan</p>
 
             <h3 class="text-xl">Contact Phone:</h3>
 
-            <p class="my-2 bg-green-100 p-2 font-bold">
-              {{ state.job.company.contactPhone }}
-            </p>
+            <p class="my-2 bg-green-100 p-2 font-bold">no hp perusahaan</p>
           </div>
 
           <!-- Manage -->

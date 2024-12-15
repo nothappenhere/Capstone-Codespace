@@ -1,18 +1,19 @@
 <script setup>
-import { ref, defineProps, onMounted } from "vue";
+import { reactive, defineProps, onMounted } from "vue";
 import { RouterLink } from "vue-router";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 import axios from "axios";
 
-import JobListing from "./JobListing.vue";
+import JobListing from "../components/JobListing.vue";
 
 defineProps({
   limit: {
     type: Number,
+    default: 3,
   },
 });
 
-const state = ref({
+const state = reactive({
   jobs: [],
   isLoading: true,
 });
@@ -20,12 +21,12 @@ const state = ref({
 onMounted(async () => {
   try {
     const response = await axios.get("http://localhost:8000/jobs");
-    state.value.jobs = response.data.data;
-    console.log(state.value.jobs.id);
+    state.jobs = response.data.data;
+    console.log(state.jobs);
   } catch (error) {
     console.error("Error fetching Jobs API", error);
   } finally {
-    state.value.isLoading = false;
+    state.isLoading = false;
   }
 });
 </script>
