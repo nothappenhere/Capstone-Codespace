@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+dotenv.config();
 
 import logger from "./middlewares/logger.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import notFound from "./middlewares/notFound.js";
 import auth from "./routes/auth.js";
-import jobs from "./routes/jobs.js";
+import jobs from "./routes/job.js";
 
 const app = express();
 
@@ -14,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+//* logger
 app.use(logger);
 
 //* routes

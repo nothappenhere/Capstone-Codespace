@@ -9,7 +9,7 @@ const isActiveLink = (routePath) => {
 </script>
 
 <template>
-  <nav class="bg-[#0e5739] border-b border-black">
+  <nav class="bg-[#0e5739] border-b border-[#0f6d47]">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div class="flex h-20 items-center justify-between">
         <div
@@ -30,8 +30,8 @@ const isActiveLink = (routePath) => {
                 to="/"
                 :class="[
                   isActiveLink('/')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
+                    ? 'bg-[#06281c] hover:bg-[#0e6e46]'
+                    : 'hover:bg-[#0e6e46] hover:text-white',
                   'text-white',
                   'rounded-md',
                   'px-3',
@@ -41,31 +41,59 @@ const isActiveLink = (routePath) => {
               >
 
               <RouterLink
-                to="/jobs"
+                to="/job-search"
                 :class="[
-                  isActiveLink('/jobs')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
+                  isActiveLink('/job-search')
+                    ? 'bg-[#06281c] hover:bg-[#0e6e46]'
+                    : 'hover:bg-[#0e6e46] hover:text-white',
                   'text-white',
                   'rounded-md',
                   'px-3',
                   'py-2',
                 ]"
-                >Jobs</RouterLink
+                >Job search</RouterLink
               >
 
-              <RouterLink
+              <!-- <RouterLink
                 to="/jobs/add"
                 :class="[
                   isActiveLink('/jobs/add')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
+                    ? 'bg-[#06281c] hover:bg-[#0e6e46]'
+                    : 'hover:bg-[#0e6e46] hover:text-white',
                   'text-white',
                   'rounded-md',
                   'px-3',
                   'py-2',
                 ]"
                 >Add Job</RouterLink
+              > -->
+
+              <RouterLink
+                to="/login"
+                :class="[
+                  isActiveLink('/login')
+                    ? 'bg-[#06281c] hover:bg-[#0e6e46]'
+                    : 'hover:bg-[#0e6e46] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Sign in</RouterLink
+              >
+
+              <RouterLink
+                to="/register"
+                :class="[
+                  isActiveLink('/register')
+                    ? 'bg-[#06281c] hover:bg-[#0e6e46] border-2'
+                    : 'hover:bg-[#0e6e46] hover:text-white border-2',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >SIGN UP FREE</RouterLink
               >
             </div>
           </div>

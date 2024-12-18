@@ -14,7 +14,7 @@ defineProps({
 </script>
 
 <template>
-  <section class="bg-[#0e6e46] py-20 mb-4">
+  <section class="bg-[#0e6e46] py-20">
     <div
       class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center"
     >

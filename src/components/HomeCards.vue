@@ -1,36 +1,36 @@
 <script setup>
 import { RouterLink } from "vue-router";
-import Card from "@/components/Card.vue";
 </script>
 
 <template>
-  <section class="py-4">
+  <section class="py-8">
     <div class="container-xl lg:container m-auto">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg">
-        <Card>
+        <div class="bg-gray-100 p-6 rounded-lg shadow-md">
           <h2 class="text-2xl font-bold">For Everyone</h2>
           <p class="mt-2 mb-4">
             Explore job openings and start your career today.
           </p>
           <RouterLink
-            to="/jobs"
-            class="inline-block bg-[#06281c] text-white rounded-lg px-4 py-2 hover:bg-[#0c4830]"
+            to="/job-search"
+            class="inline-block bg-[#0e573a] text-white rounded-lg px-4 py-2 hover:bg-[#0f6d47]"
           >
-            Browse Jobs
+            Explore Jobs
           </RouterLink>
-        </Card>
-        <Card bg="bg-green-100">
-          <h2 class="text-2xl font-bold">For Employers</h2>
+        </div>
+
+        <div class="bg-[#d5f6e1] p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-bold">For Companies</h2>
           <p class="mt-2 mb-4">
-            List your job to find the perfect developer for the role
+            List your job to find the right employee for the role.
           </p>
           <RouterLink
             to="/jobs/add"
-            class="inline-block bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-600"
+            class="inline-block bg-[#20a96c] text-white rounded-lg px-4 py-2 hover:bg-[#138857]"
           >
             Add Job
           </RouterLink>
-        </Card>
+        </div>
       </div>
     </div>
   </section>

@@ -1,10 +1,14 @@
 <script setup>
-import { ref, defineProps, onMounted } from "vue";
-import { RouterLink } from "vue-router";
+import { reactive, defineProps, onMounted } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 import axios from "axios";
-
 import JobListing from "./JobListing.vue";
+
+const isActiveLink = (routePath) => {
+  const route = useRoute();
+  return route.path === routePath;
+};
 
 defineProps({
   limit: {
@@ -12,7 +16,7 @@ defineProps({
   },
 });
 
-const state = ref({
+const state = reactive({
   jobs: [],
   isLoading: true,
 });
@@ -20,21 +24,30 @@ const state = ref({
 onMounted(async () => {
   try {
     const response = await axios.get("http://localhost:8000/jobs");
-    state.value.jobs = response.data.data;
-    console.log(state.value.jobs.id);
+    state.jobs = response.data.data;
   } catch (error) {
     console.error("Error fetching Jobs API", error);
   } finally {
-    state.value.isLoading = false;
+    state.isLoading = false;
   }
 });
 </script>
 
 <template>
-  <section class="bg-green-50 px-4 py-10">
+  <section class="bg-[#eefbf4] px-4 py-10">
     <div class="container-xl lg:container m-auto">
-      <h2 class="text-3xl font-bold text-[#118a54] mb-6 text-center">
-        Newly Added
+      <h2
+        v-if="isActiveLink('/')"
+        class="text-3xl font-bold text-[#118a54] mb-6 text-center"
+      >
+        Newly Added Jobs
+      </h2>
+
+      <h2
+        v-if="isActiveLink('/job-search')"
+        class="text-3xl font-bold text-[#118a54] mb-6 text-center"
+      >
+        All Available Jobs
       </h2>
 
       <div v-if="state.isLoading" class="text-center py-6">
@@ -51,10 +64,10 @@ onMounted(async () => {
     </div>
   </section>
 
-  <section class="m-auto max-w-lg my-10 px-6">
+  <section v-if="isActiveLink('/')" class="m-auto max-w-lg my-10 px-6">
     <RouterLink
-      to="/jobs"
-      class="block bg-[#0e5739] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0c4830]"
+      to="/job-search"
+      class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
       >View available jobs</RouterLink
     >
   </section>

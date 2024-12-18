@@ -1,19 +1,14 @@
 import bcrypt from "bcrypt";
 import db from "../db/connection.js";
+import jwt from "jsonwebtoken";
 
 /**
   @desc   Login user
-  @route  GET /login
+  @route  POST /login
 */
 export const loginUser = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-
-  if (!email || !password) {
-    const error = new Error("Required email and password!");
-    error.status = 400;
-    return next(error);
-  }
 
   // Ambil user berdasarkan email
   db.query(
@@ -26,13 +21,23 @@ export const loginUser = (req, res, next) => {
 
       const user = result[0];
       try {
-        // Bandingkan password dengan hash di database
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
           return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        res.status(200).json({ message: "Login successful", userId: user.id });
+        // Buat token JWT
+        const token = jwt.sign(
+          { userId: user.id, email: user.email },
+          process.env.JWT_SECRET,
+          { expiresIn: "1h" } // Token berlaku selama 1 jam
+        );
+
+        res.status(200).json({
+          message: "Login successful",
+          token, // Kembalikan token ke frontend
+          user: { id: user.user_id, email: user.email },
+        });
       } catch (err) {
         next(err);
       }
@@ -41,37 +46,42 @@ export const loginUser = (req, res, next) => {
 };
 
 /**
-  @desc   Create new user
+  @desc   Register user
   @route  POST /register
 */
-export const registUser = async (req, res, next) => {
+export const registerUser = async (req, res, next) => {
   const username = req.body.username;
   const email = req.body.email;
   const password = req.body.password;
 
-  if (!username || !email || !password) {
-    const error = new Error("Required username, email, and password!");
-    error.status = 400;
-    return next(error);
-  }
-
   try {
-    // Hash password dengan bcrypt
-    const saltRounds = 10; // Semakin besar nilainya, semakin aman tapi lebih lambat
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    db.query("SELECT * FROM users WHERE email = ?", [email], (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: "Database query failed" });
+      }
+      if (result.length > 0) {
+        return res.status(400).json({ error: "Email already in use" });
+      }
 
-    // Simpan ke database
-    db.query(
-      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-      [username, email, hashedPassword],
-      (err, result) => {
-        if (err) {
-          return res.status(500).json({ error: "Database query failed" });
+      // Lanjutkan menyimpan user
+      const saltRounds = 10;
+      bcrypt.hash(password, saltRounds, (hashErr, hashedPassword) => {
+        if (hashErr) {
+          return res.status(500).json({ error: "Password hashing failed" });
         }
 
-        res.status(201).json({ message: "User registered successfully" });
-      }
-    );
+        db.query(
+          "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+          [username, email, hashedPassword],
+          (insertErr, insertResult) => {
+            if (insertErr) {
+              return res.status(500).json({ error: "Database insert failed" });
+            }
+            res.status(201).json({ message: "User registered successfully" });
+          }
+        );
+      });
+    });
   } catch (err) {
     next(err);
   }

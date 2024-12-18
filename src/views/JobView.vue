@@ -6,6 +6,13 @@ import { useRoute, RouterLink, useRouter } from "vue-router";
 import BackButton from "@/components/BackButton.vue";
 import { useToast } from "vue-toastification";
 
+const rupiah = (number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+  }).format(number);
+};
+
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
@@ -45,17 +52,17 @@ onMounted(async () => {
 
 <template>
   <BackButton />
-  <section v-if="!state.isLoading" class="bg-green-50">
+  <section v-if="!state.isLoading" class="bg-[#eefbf4]">
     <div class="container m-auto py-10 px-6">
       <div class="grid grid-cols-1 md:grid-cols-70/30 w-full gap-6">
         <main>
           <div
-            class="bg-white p-6 rounded-lg shadow-md text-center md:text-left"
+            class="bg-white p-6 rounded-md shadow-md text-center md:text-left"
           >
-            <div class="text-gray-500 mb-4">{{ state.job.type }}</div>
-            <h1 class="text-3xl font-bold mb-4">{{ state.job.title }}</h1>
+            <div class="text-gray-500">{{ state.job.type }}</div>
+            <h1 class="text-3xl font-bold my-4">{{ state.job.title }}</h1>
             <div
-              class="text-gray-500 mb-4 flex align-middle justify-center md:justify-start"
+              class="text-gray-500 flex items-center justify-center md:justify-start"
             >
               <i
                 class="fa-solid fa-location-dot text-lg text-orange-700 mr-2"
@@ -64,28 +71,27 @@ onMounted(async () => {
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-            <h3 class="text-green-800 text-lg font-bold mb-6">
-              Job Description
-            </h3>
+          <div class="bg-white p-6 rounded-md shadow-md mt-6">
+            <h3 class="text-green-800 text-xl font-bold">Job Description</h3>
 
-            <p class="mb-4">
+            <p class="mt-1 mb-4">
               {{ state.job.description }}
             </p>
 
-            <h3 class="text-green-800 text-lg font-bold mb-2">Salary</h3>
+            <h3 class="text-green-800 text-xl font-bold">Salary</h3>
 
-            <p class="mb-4">{{ state.job.salary }} / Year</p>
+            <p class="mt-1 mb-4">{{ rupiah(state.job.salary) }}/Month</p>
           </div>
         </main>
 
         <!-- Sidebar -->
         <aside>
           <!-- Company Info -->
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-bold mb-6">Company Info</h3>
+          <div class="bg-white p-6 rounded-md shadow-md">
+            <h3 class="text-3xl font-bold mb-6">Company Info</h3>
+            <!-- <div class="border border-gray-100"></div> -->
 
-            <h2 class="text-2xl">nama perusahaan</h2>
+            <h2 class="text-xl">nama perusahaan</h2>
 
             <p class="my-2">deskripsi perusahaan</p>
 
