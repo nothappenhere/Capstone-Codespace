@@ -1,6 +1,7 @@
 <script setup>
 import { reactive } from "vue";
 import { useToast } from "vue-toastification";
+import { RouterLink } from "vue-router";
 import router from "@/router";
 import axios from "axios";
 import logo from "@/assets/img/logo.png";
@@ -15,8 +16,8 @@ const handleSubmit = async () => {
   if (!login.email.includes("@")) {
     return toast.error("Invalid email format");
   }
-  if (login.password.length < 6) {
-    return toast.error("Password must be at least 6 characters");
+  if (login.password.length < 8) {
+    return toast.error("Password must be at least 8 characters");
   }
 
   const newLogin = {
@@ -52,6 +53,7 @@ const handleSubmit = async () => {
           <h2 class="text-3xl text-center font-semibold mb-10">Sign in</h2>
 
           <div class="mb-4">
+            <i class="fa-solid fa-envelope me-2"></i>
             <label class="text-gray-700 font-bold mb-2">Email Address</label>
             <input
               type="email"
@@ -63,6 +65,7 @@ const handleSubmit = async () => {
           </div>
 
           <div class="mb-6">
+            <i class="fa-solid fa-lock me-2"></i>
             <label class="text-gray-700 font-bold mb-2">Password</label>
             <input
               type="password"
@@ -81,11 +84,15 @@ const handleSubmit = async () => {
           </button>
 
           <div class="flex justify-between mt-5">
-            <a href="/forgot-password" class="text-gray-500 hover:text-gray-600"
-              >Forgot Password?</a
+            <RouterLink
+              to="/forgot-password"
+              class="text-gray-500 hover:text-gray-600"
+              >Forgot Password?</RouterLink
             >
-            <a href="/register" class="text-gray-500 hover:text-gray-600"
-              >Create Free Account</a
+            <RouterLink
+              to="/register/user"
+              class="text-gray-500 hover:text-gray-600"
+              >Create Free Account</RouterLink
             >
           </div>
         </form>

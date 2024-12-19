@@ -25,7 +25,7 @@ import { RouterLink } from "vue-router";
             List your job to find the right employee for the role.
           </p>
           <RouterLink
-            to="/jobs/add"
+            to="/register/companies"
             class="inline-block bg-[#20a96c] text-white rounded-lg px-4 py-2 hover:bg-[#138857]"
           >
             Add Job

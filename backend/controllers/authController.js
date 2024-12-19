@@ -86,3 +86,41 @@ export const registerUser = async (req, res, next) => {
     next(err);
   }
 };
+
+export const checkEmailExist = (req, res, next) => {
+  const email = req.body.email;
+  db.query("SELECT * FROM users WHERE email = ?", [email], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: "Database query failed" });
+    }
+    if (result.length === 0) {
+      return res.status(200).json({
+        message: "If the email exists, you will receive further instructions.",
+        exists: false,
+      });
+    }
+    res.status(200).json({ message: "Email found", exists: true });
+  });
+};
+
+export const resetPasswordUser = (req, res, next) => {
+  const { email, password } = req.body;
+
+  const saltRounds = 10;
+  bcrypt.hash(password, saltRounds, (hashErr, hashedPassword) => {
+    if (hashErr) {
+      return res.status(500).json({ error: "Password hashing failed" });
+    }
+
+    db.query(
+      "UPDATE users SET password = ? WHERE email = ?",
+      [hashedPassword, email],
+      (updateErr, result) => {
+        if (updateErr) {
+          return res.status(500).json({ error: "Database update failed" });
+        }
+        res.status(200).json({ message: "Password reset successfully" });
+      }
+    );
+  });
+};

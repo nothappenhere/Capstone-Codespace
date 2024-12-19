@@ -83,9 +83,9 @@ const isActiveLink = (routePath) => {
               >
 
               <RouterLink
-                to="/register"
+                to="/register/companies"
                 :class="[
-                  isActiveLink('/register')
+                  isActiveLink('/register/companies')
                     ? 'bg-[#06281c] hover:bg-[#0e6e46] border-2'
                     : 'hover:bg-[#0e6e46] hover:text-white border-2',
                   'text-white',
@@ -93,7 +93,7 @@ const isActiveLink = (routePath) => {
                   'px-3',
                   'py-2',
                 ]"
-                >SIGN UP FREE</RouterLink
+                >FOR COMPANIES</RouterLink
               >
             </div>
           </div>
