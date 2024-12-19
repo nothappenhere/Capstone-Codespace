@@ -1,6 +1,6 @@
 <script setup>
-import { RouterLink } from "vue-router";
-import { defineProps, reactive, computed } from "vue";
+import { RouterLink, useRoute } from "vue-router";
+import { defineProps, computed, ref } from "vue";
 
 const rupiah = (number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -9,21 +9,26 @@ const rupiah = (number) => {
   }).format(number);
 };
 
+const isActiveLink = (routePath) => {
+  const route = useRoute();
+  return route.path === routePath;
+};
+
 const props = defineProps({
   job: {
     type: Object,
   },
 });
 
-let showFullDescription = reactive(false);
+let showFullDescription = ref(false);
 
 const toggleFullDescription = () => {
-  showFullDescription = !showFullDescription;
+  showFullDescription.value = !showFullDescription.value;
 };
 
 const truncatedDescription = computed(() => {
   let description = props.job.description;
-  if (!showFullDescription) {
+  if (!showFullDescription.value) {
     description = description.substring(0, 90) + "...";
   }
   return description;
@@ -34,8 +39,8 @@ const truncatedDescription = computed(() => {
   <div class="bg-white rounded-lg shadow-md relative">
     <div class="p-4">
       <div class="mb-6">
-        <div class="text-gray-600 my-2">{{ job.type }}</div>
-        <h3 class="text-xl font-bold underline">{{ job.title }}</h3>
+        <div class="text-md text-gray-600 my-2">{{ job.type }}</div>
+        <h3 class="text-2xl font-bold">{{ job.title }}</h3>
       </div>
 
       <div class="mb-5">
@@ -59,8 +64,20 @@ const truncatedDescription = computed(() => {
           <i class="fa-solid fa-location-dot text-lg"></i>
           {{ job.location }}
         </div>
+
+        <!-- Home Section -->
         <RouterLink
-          :to="'/job/' + job.job_id"
+          v-if="isActiveLink('/') || isActiveLink('/search')"
+          :to="`/job/${job.job_id}`"
+          class="h-[36px] bg-[#20a96c] hover:bg-[#138857] text-white px-4 py-2 rounded-md text-center text-sm"
+        >
+          Read More
+        </RouterLink>
+
+        <!-- User Section -->
+        <RouterLink
+          v-if="isActiveLink('/dashboard/user') || isActiveLink('/dashboard/user/search')"
+          :to="`/dashboard/user/job/${job.job_id}`"
           class="h-[36px] bg-[#20a96c] hover:bg-[#138857] text-white px-4 py-2 rounded-md text-center text-sm"
         >
           Read More

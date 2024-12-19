@@ -3,8 +3,8 @@ import db from "../db/connection.js";
 import jwt from "jsonwebtoken";
 
 /**
-  @desc   Login user
-  @route  POST /login
+  @desc   Login user based on their role
+  @route  POST /login/:role
 */
 export const loginUser = (req, res, next) => {
   const email = req.body.email;
@@ -36,7 +36,12 @@ export const loginUser = (req, res, next) => {
         res.status(200).json({
           message: "Login successful",
           token, // Kembalikan token ke frontend
-          user: { id: user.user_id, email: user.email },
+          user: {
+            id: user.user_id,
+            full_name: user.full_name,
+            email: user.email,
+            role: user.role,
+          },
         });
       } catch (err) {
         next(err);
@@ -46,13 +51,14 @@ export const loginUser = (req, res, next) => {
 };
 
 /**
-  @desc   Register user
-  @route  POST /register
+  @desc   Register user based on their role
+  @route  POST /register/:role
 */
 export const registerUser = async (req, res, next) => {
-  const username = req.body.username;
+  const full_name = req.body.full_name;
   const email = req.body.email;
   const password = req.body.password;
+  const role = req.body.role || "user";
 
   try {
     db.query("SELECT * FROM users WHERE email = ?", [email], (err, result) => {
@@ -71,8 +77,8 @@ export const registerUser = async (req, res, next) => {
         }
 
         db.query(
-          "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-          [username, email, hashedPassword],
+          "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
+          [full_name, email, hashedPassword, role],
           (insertErr, insertResult) => {
             if (insertErr) {
               return res.status(500).json({ error: "Database insert failed" });
@@ -87,6 +93,10 @@ export const registerUser = async (req, res, next) => {
   }
 };
 
+/**
+  @desc   Check email exist for reset password
+  @route  POST /check-email
+*/
 export const checkEmailExist = (req, res, next) => {
   const email = req.body.email;
   db.query("SELECT * FROM users WHERE email = ?", [email], (err, result) => {
@@ -102,7 +112,10 @@ export const checkEmailExist = (req, res, next) => {
     res.status(200).json({ message: "Email found", exists: true });
   });
 };
-
+/**
+  @desc   Continue reset password if email exist
+  @route  POST /reset-password
+*/
 export const resetPasswordUser = (req, res, next) => {
   const { email, password } = req.body;
 

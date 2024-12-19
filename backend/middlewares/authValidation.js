@@ -13,11 +13,11 @@ export const validateLogin = [
 ];
 
 export const validateRegister = [
-  body("username")
+  body("full_name")
     .notEmpty()
-    .withMessage("Username is required!")
-    .isLength({ min: 6 })
-    .withMessage("Username must be at least 6 characters!"),
+    .withMessage("Full Name is required!")
+    .isLength({ min: 3 })
+    .withMessage("Full Name must be at least 3 characters!"),
   body("email").isEmail().withMessage("Invalid email format!"),
   body("password")
     .notEmpty()

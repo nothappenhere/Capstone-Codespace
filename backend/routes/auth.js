@@ -12,17 +12,16 @@ import {
   validateRegister,
   checkEmail,
   validateResetPassword,
-} from "../middlewares/validation.js";
+} from "../middlewares/authValidation.js";
 
 //* POST user login
 router.post("/login", validateLogin, loginUser);
 
 //* POST user registration
-router.post("/register", validateRegister, registerUser);
+router.post("/register/:role", validateRegister, registerUser);
 
 //* POST reset password
 router.post("/check-email", checkEmail, checkEmailExist);
 router.post("/reset-password", validateResetPassword, resetPasswordUser);
-
 
 export default router;

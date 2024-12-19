@@ -3,7 +3,8 @@ import { reactive, defineProps, onMounted } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 import axios from "axios";
-import JobListing from "./JobListing.vue";
+
+import JobDetails from "./JobCardLists.vue";
 
 const isActiveLink = (routePath) => {
   const route = useRoute();
@@ -24,7 +25,7 @@ const state = reactive({
 onMounted(async () => {
   try {
     const response = await axios.get("http://localhost:8000/jobs");
-    state.jobs = response.data.data;
+    state.jobs = response.data.jobs;
   } catch (error) {
     console.error("Error fetching Jobs API", error);
   } finally {
@@ -37,16 +38,13 @@ onMounted(async () => {
   <section class="bg-[#eefbf4] px-4 py-10">
     <div class="container-xl lg:container m-auto">
       <h2
-        v-if="isActiveLink('/')"
+        v-if="isActiveLink('/') || isActiveLink('/dashboard/user')"
         class="text-3xl font-bold text-[#118a54] mb-6 text-center"
       >
         Newly Added Jobs
       </h2>
 
-      <h2
-        v-if="isActiveLink('/job-search')"
-        class="text-3xl font-bold text-[#118a54] mb-6 text-center"
-      >
+      <h2 v-else class="text-3xl font-bold text-[#118a54] mb-6 text-center">
         All Available Jobs
       </h2>
 
@@ -55,7 +53,7 @@ onMounted(async () => {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <JobListing
+        <JobDetails
           v-for="job in state.jobs.slice(0, limit || state.jobs.length)"
           :key="job.job_id"
           :job="job"
@@ -64,11 +62,21 @@ onMounted(async () => {
     </div>
   </section>
 
-  <section v-if="isActiveLink('/')" class="m-auto max-w-lg my-10 px-6">
+  <section class="m-auto max-w-lg my-10 px-6">
+    <!-- Home Section -->
     <RouterLink
-      to="/job-search"
+      v-if="isActiveLink('/')"
+      to="/search"
       class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
-      >View available jobs</RouterLink
+      >View all available jobs</RouterLink
+    >
+
+    <!-- User Section -->
+    <RouterLink
+      v-if="isActiveLink('/dashboard/user')"
+      to="/dashboard/user/search"
+      class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
+      >View all available jobs</RouterLink
     >
   </section>
 </template>

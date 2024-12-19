@@ -1,10 +1,15 @@
 <script setup>
+import { reactive, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 import axios from "axios";
-import { reactive, onMounted } from "vue";
-import { useRoute, RouterLink, useRouter } from "vue-router";
+
 import BackButton from "@/components/BackButton.vue";
-import { useToast } from "vue-toastification";
+
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
 
 const rupiah = (number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -13,35 +18,55 @@ const rupiah = (number) => {
   }).format(number);
 };
 
-const route = useRoute();
-const router = useRouter();
-const toast = useToast();
-
-const jobId = route.params.id;
-
 const state = reactive({
   job: {},
   isLoading: true,
 });
 
-const deleteJob = async () => {
-  try {
-    const confirm = window.confirm("Are you sure you want to delete this job?");
-    if (confirm) {
-      await axios.delete(`/api/jobs/${jobId}`);
-      toast.success("Job Deleted Successfully");
-      router.push("/jobs");
+// const deleteJob = async () => {
+//   try {
+//     const confirm = window.confirm("Are you sure you want to delete this job?");
+//     if (confirm) {
+//       await axios.delete(`/api/jobs/${jobId}`);
+//       toast.success("Job Deleted Successfully");
+//       router.push("/jobs");
+//     }
+//   } catch (error) {
+//     console.error("Error deleting Job API", error);
+//     toast.error("Job Not Deleting");
+//   }
+// };
+
+const jobId = parseInt(route.params.id);
+const userId = localStorage.getItem("userId");
+const role = localStorage.getItem("userRole");
+
+const checkRole = async () => {
+  if (role === "user") {
+    try {
+      await axios.post("http://localhost:8000/apply", {
+        job_id: jobId,
+        user_id: parseInt(userId),
+      });
+
+      toast.success("Successfully applied for the job");
+      router.push("/dashboard/user/apply-history");
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        toast.error(error.response.data.message); // Pesan error dari server
+      } else {
+        toast.error("Error while applying job, please try again in minutes.");
+      }
     }
-  } catch (error) {
-    console.error("Error deleting Job API", error);
-    toast.error("Job Not Deleting");
+  } else {
+    router.push("/register/user");
   }
 };
 
 onMounted(async () => {
   try {
     const response = await axios.get(`http://localhost:8000/job/${jobId}`);
-    state.job = response.data;
+    state.job = response.data.job;
   } catch (error) {
     console.error("Error fetching Job API", error);
   } finally {
@@ -51,9 +76,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <BackButton />
+  <BackButton :id="jobId" />
+
   <section v-if="!state.isLoading" class="bg-[#eefbf4]">
-    <div class="container m-auto py-10 px-6">
+    <div class="container m-auto py-8 px-6">
       <div class="grid grid-cols-1 md:grid-cols-70/30 w-full gap-6">
         <main>
           <div
@@ -88,38 +114,34 @@ onMounted(async () => {
         <aside>
           <!-- Company Info -->
           <div class="bg-white p-6 rounded-md shadow-md">
-            <h3 class="text-3xl font-bold mb-6">Company Info</h3>
-            <!-- <div class="border border-gray-100"></div> -->
+            <h2 class="text-3xl font-bold">{{ state.job.company.name }}</h2>
 
-            <h2 class="text-xl">nama perusahaan</h2>
-
-            <p class="my-2">deskripsi perusahaan</p>
+            <p class="text-md my-2">{{ state.job.company.description }}</p>
 
             <hr class="my-4" />
 
-            <h3 class="text-xl">Contact Email:</h3>
-
-            <p class="my-2 bg-green-100 p-2 font-bold">email perusahaan</p>
-
-            <h3 class="text-xl">Contact Phone:</h3>
-
-            <p class="my-2 bg-green-100 p-2 font-bold">no hp perusahaan</p>
+            <h3 class="text-lg">Contact Email:</h3>
+            <p class="my-2 bg-[#e3f5e3] px-2 py-3 font-bold">
+              {{ state.job.company.contact_info }}
+            </p>
           </div>
 
           <!-- Manage -->
           <div class="bg-white p-6 rounded-lg shadow-md mt-6">
-            <h3 class="text-xl font-bold mb-6">Manage Job</h3>
-            <RouterLink
-              :to="`/jobs/edit/${state.job.id}`"
-              class="bg-green-500 hover:bg-green-600 text-white text-center font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
-              >Edit Job</RouterLink
-            >
+            <h3 class="text-2xl font-bold mb-6">Interested in this job?</h3>
             <button
+              type="button"
+              @click="checkRole"
+              class="bg-[#358436] hover:bg-[#307131] text-white text-center font-bold py-2 px-4 rounded-sm w-full focus:outline-none focus:shadow-outline mt-4 block"
+            >
+              Apply Now!
+            </button>
+            <!-- <button
               @click="deleteJob"
               class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
             >
               Delete Job
-            </button>
+            </button> -->
           </div>
         </aside>
       </div>

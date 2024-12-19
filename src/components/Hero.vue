@@ -1,16 +1,13 @@
 <script setup>
-import { defineProps } from "vue";
-
-defineProps({
-  title: {
-    type: String,
-    default: "Become part of JobVacancies",
-  },
-  subtitle: {
-    type: String,
-    default: "Find the job that fits your skills and needs",
-  },
-});
+const role = localStorage.getItem("userRole");
+const header =
+  role === "user"
+    ? "Find your next company"
+    : role === "company"
+    ? "Find your next employe"
+    : role === "admin"
+    ? "Organize all job applications"
+    : "Become a part of JobVacancies";
 </script>
 
 <template>
@@ -20,7 +17,7 @@ defineProps({
     >
       <div class="text-center">
         <h1 class="text-2xl font-extrabold text-white sm:text-3xl md:text-5xl">
-          Find the right company for you
+          {{ header }}
         </h1>
         <p class="my-4 text-xl text-white">
           Explore company profiles to find the right workplace for you. Learn
