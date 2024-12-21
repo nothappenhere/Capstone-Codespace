@@ -1,13 +1,18 @@
 # **Capstone Back-End Codespace** 
 
-## Customize configuration
+Aplikasi ini adalah sebuah sistem backend yang dibangun menggunakan [Express.js](https://expressjs.com/) sebagai framework server. Sistem ini mengimplementasikan fungsi-fungsi CRUD (*Create, Read, Update, Delete*) untuk mengelola data pada database MySQL.
 
-See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
 ```sh
 npm install
+```
+
+### Run the Server before Development
+
+```sh
+npm run server
 ```
 
 ### Compile and Hot-Reload for Development

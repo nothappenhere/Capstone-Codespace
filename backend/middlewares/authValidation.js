@@ -1,8 +1,15 @@
 import { body, validationResult } from "express-validator";
 
 export const validateLogin = [
-  body("email").isEmail().withMessage("Invalid email format"),
-  body("password").notEmpty().withMessage("Password is required"),
+  body("email")
+    .isEmail()
+    .withMessage("Invalid email format, must be inclued '@' sign."),
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long!"),
+
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -17,13 +24,16 @@ export const validateRegister = [
     .notEmpty()
     .withMessage("Full Name is required!")
     .isLength({ min: 3 })
-    .withMessage("Full Name must be at least 3 characters!"),
-  body("email").isEmail().withMessage("Invalid email format!"),
+    .withMessage("Full Name must be at least 3 characters long."),
+  body("email")
+    .isEmail()
+    .withMessage("Invalid email format, must be inclued '@' sign."),
   body("password")
     .notEmpty()
     .withMessage("Password is required!")
     .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters!"),
+    .withMessage("Password must be at least 8 characters long."),
+
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -34,7 +44,10 @@ export const validateRegister = [
 ];
 
 export const checkEmail = [
-  body("email").isEmail().withMessage("Invalid email format!"),
+  body("email")
+    .isEmail()
+    .withMessage("Invalid email format, must be inclued '@' sign."),
+
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -45,12 +58,15 @@ export const checkEmail = [
 ];
 
 export const validateResetPassword = [
-  body("email").isEmail().withMessage("Invalid email format!"),
+  body("email")
+    .isEmail()
+    .withMessage("Invalid email format, must be inclued '@' sign."),
   body("password")
     .notEmpty()
     .withMessage("Password is required!")
     .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters!"),
+    .withMessage("Password must be at least 8 characters long."),
+
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

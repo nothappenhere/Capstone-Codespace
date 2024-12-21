@@ -21,7 +21,6 @@ const props = defineProps({
 });
 
 let showFullDescription = ref(false);
-
 const toggleFullDescription = () => {
   showFullDescription.value = !showFullDescription.value;
 };
@@ -76,8 +75,23 @@ const truncatedDescription = computed(() => {
 
         <!-- User Section -->
         <RouterLink
-          v-if="isActiveLink('/dashboard/user') || isActiveLink('/dashboard/user/search')"
+          v-if="
+            isActiveLink('/dashboard/user') ||
+            isActiveLink('/dashboard/user/search')
+          "
           :to="`/dashboard/user/job/${job.job_id}`"
+          class="h-[36px] bg-[#20a96c] hover:bg-[#138857] text-white px-4 py-2 rounded-md text-center text-sm"
+        >
+          Read More
+        </RouterLink>
+
+        <!-- Company Section -->
+        <RouterLink
+          v-if="
+            isActiveLink('/dashboard/company') ||
+            isActiveLink('/dashboard/company/search')
+          "
+          :to="`/dashboard/company/job/${job.job_id}`"
           class="h-[36px] bg-[#20a96c] hover:bg-[#138857] text-white px-4 py-2 rounded-md text-center text-sm"
         >
           Read More

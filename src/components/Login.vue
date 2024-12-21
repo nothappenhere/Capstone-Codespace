@@ -1,7 +1,7 @@
 <script setup>
 import { reactive } from "vue";
-import { useToast } from "vue-toastification";
 import { RouterLink } from "vue-router";
+import { useToast } from "vue-toastification";
 import router from "@/router";
 import axios from "axios";
 import logo from "@/assets/img/logo.png";
@@ -14,10 +14,10 @@ const login = reactive({
 const handleSubmit = async () => {
   const toast = useToast();
   if (!login.email.includes("@")) {
-    return toast.error("Invalid email format");
+    return toast.error("Invalid email format, must be include '@' sign.");
   }
   if (login.password.length < 8) {
-    return toast.error("Password must be at least 8 characters");
+    return toast.error("Password must be at least 8 characters long.");
   }
 
   const newLogin = {
@@ -26,7 +26,7 @@ const handleSubmit = async () => {
   };
 
   try {
-    const response = await axios.post("http://localhost:8000/login", newLogin);
+    const response = await axios.post("/api/login", newLogin);
     const { token, user } = response.data; // Ambil token dan user dari respons
     localStorage.setItem("authToken", token); // Simpan token di localStorage
     localStorage.setItem("userId", user.id); // Simpan id user di localStorage
@@ -40,7 +40,9 @@ const handleSubmit = async () => {
     } else if (user.role === "user") {
       router.push(`/dashboard/user`);
     } else if (user.role === "company") {
-      router.push("/dashboard/company");
+      localStorage.setItem("companyId", user.company_id);
+      localStorage.setItem("userEmail", user.email); // Simpan email user di localStorage
+      router.push("/dashboard/company/company-details");
     } else {
       router.push("/"); // Default jika role tidak dikenali
     }
@@ -48,7 +50,7 @@ const handleSubmit = async () => {
     if (error.response && error.response.data.message) {
       toast.error(error.response.data.message); // Pesan error dari server
     } else {
-      toast.error("Invalid credentials!");
+      toast.error("Invalid credentials, plese check your email or password.");
     }
   } finally {
     // Reset input login

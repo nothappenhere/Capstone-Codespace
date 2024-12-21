@@ -1,9 +1,10 @@
 <script setup>
 import { reactive } from "vue";
+import { RouterLink, useRoute } from "vue-router";
 import { useToast } from "vue-toastification";
+import router from "@/router";
 import axios from "axios";
 import logo from "@/assets/img/logo.png";
-import { RouterLink, useRoute } from "vue-router";
 
 const isActiveLink = (routePath) => {
   const route = useRoute();
@@ -19,16 +20,16 @@ const register = reactive({
 
 const handleSubmit = async () => {
   const toast = useToast();
-  if (register.full_name.length < 3) {
-    return toast.error("Full name must be at least 3 characters");
-  } else if (register.full_name === "") {
+  if (register.full_name === "") {
     return toast.error("Full name cannot be empty");
+  } else if (register.full_name.length < 3) {
+    return toast.error("Full name must be at least 3 characters");
   }
   if (!register.email.includes("@")) {
-    return toast.error("Invalid email format, must be include '@'");
+    return toast.error("Invalid email format, must be include '@' sign.");
   }
   if (register.password.length < 8) {
-    return toast.error("Password must be at least 8 characters");
+    return toast.error("Password must be at least 8 characters long.");
   }
 
   const newRegister = {
@@ -39,16 +40,15 @@ const handleSubmit = async () => {
   };
 
   try {
-    await axios.post(
-      `http://localhost:8000/register/${register.role}`,
-      newRegister
-    );
+    await axios.post(`/api/register/${register.role}`, newRegister);
+
     toast.success("Registration Successfully");
+    router.push("/login");
   } catch (error) {
     if (error.response && error.response.data.error) {
       toast.error(error.response.data.error); // Pesan error dari server
     } else {
-      toast.error("Something went wrong. Please try again!");
+      toast.error("Something went wrong, please try again.");
     }
   } finally {
     // Hapus kredensial setelah login

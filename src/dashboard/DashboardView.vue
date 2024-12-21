@@ -11,5 +11,10 @@ const route = useRoute();
   <Hero v-if="route.path === '/dashboard/user'" />
   <Cards v-if="route.path === '/dashboard/user'" />
   <JobLists :limit="3" v-if="route.path === '/dashboard/user'" />
+
+  <Hero v-if="route.path === '/dashboard/company'" />
+  <Cards v-if="route.path === '/dashboard/company'" />
+  <JobLists :limit="3" v-if="route.path === '/dashboard/company'" />
+
   <router-view />
 </template>

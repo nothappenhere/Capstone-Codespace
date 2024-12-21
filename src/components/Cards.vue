@@ -73,6 +73,36 @@ const isActiveLink = (routePath) => {
           </RouterLink>
         </div>
       </div>
+
+      <!-- Company Section -->
+      <div
+        v-if="isActiveLink('/dashboard/company')"
+        class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg"
+      >
+        <div class="bg-gray-100 p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-bold">Looking for a candidates?</h2>
+          <p class="mt-2 mb-4">
+            Post your job vacancy and get the right candidate for the role.
+          </p>
+          <RouterLink
+            to="/dashboard/user/add-job"
+            class="inline-block bg-[#0e573a] text-white rounded-lg px-4 py-2 hover:bg-[#0f6d47]"
+          >
+            Add Job
+          </RouterLink>
+        </div>
+
+        <div class="bg-[#d5f6e1] p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-bold">Application History</h2>
+          <p class="mt-2 mb-4">See all the vacancies you have published.</p>
+          <RouterLink
+            to="/dashboard/user/search"
+            class="inline-block bg-[#20a96c] text-white rounded-lg px-4 py-2 hover:bg-[#138857]"
+          >
+            View History
+          </RouterLink>
+        </div>
+      </div>
     </div>
   </section>
 </template>

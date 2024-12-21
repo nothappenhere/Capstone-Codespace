@@ -6,6 +6,8 @@ import {
   registerUser,
   checkEmailExist,
   resetPasswordUser,
+  checkCompanyDetailStatus,
+  addCompanyDetails,
 } from "../controllers/authController.js";
 import {
   validateLogin,
@@ -20,8 +22,14 @@ router.post("/login", validateLogin, loginUser);
 //* POST user registration
 router.post("/register/:role", validateRegister, registerUser);
 
-//* POST reset password
+//* POST Check email exist
 router.post("/check-email", checkEmail, checkEmailExist);
+//* POST reset password
 router.post("/reset-password", validateResetPassword, resetPasswordUser);
+
+//* GET company details status
+router.get("/company-status/:user_id", checkCompanyDetailStatus);
+//* POST Add company details
+router.post("/company-details", addCompanyDetails);
 
 export default router;

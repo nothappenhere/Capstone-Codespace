@@ -4,7 +4,7 @@ import { RouterLink, useRoute } from "vue-router";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 import axios from "axios";
 
-import JobDetails from "./JobCardLists.vue";
+import JobCardLists from "./JobCardLists.vue";
 
 const isActiveLink = (routePath) => {
   const route = useRoute();
@@ -24,12 +24,12 @@ const state = reactive({
 
 onMounted(async () => {
   try {
-    const response = await axios.get("http://localhost:8000/jobs");
+    const response = await axios.get("/api/jobs");
     state.jobs = response.data.jobs;
+
+    state.isLoading = false;
   } catch (error) {
     console.error("Error fetching Jobs API", error);
-  } finally {
-    state.isLoading = false;
   }
 });
 </script>
@@ -38,22 +38,71 @@ onMounted(async () => {
   <section class="bg-[#eefbf4] px-4 py-10">
     <div class="container-xl lg:container m-auto">
       <h2
-        v-if="isActiveLink('/') || isActiveLink('/dashboard/user')"
+        v-if="state.jobs.length === 0 && isActiveLink('/dashboard/company')"
+        class="text-4xl font-bold text-[#118a54] mb-6 text-center"
+      >
+        You haven't added any jobs
+      </h2>
+
+      <div
+        v-else-if="
+          state.jobs.length === 0 && isActiveLink('/dashboard/company/search')
+        "
+        class="flex flex-col items-center justify-center"
+      >
+        <h2 class="text-4xl font-bold text-[#118a54] mb-6 text-center">
+          You haven't added any jobs.
+        </h2>
+        <RouterLink
+          to="/dashboard/company/add-job"
+          class="bg-green-600 hover:bg-green-700 rounded-md border px-6 py-4 text-white"
+          >Add Jobs Now!</RouterLink
+        >
+      </div>
+
+      <h2
+        v-else-if="state.jobs.length === 0"
+        class="text-4xl font-bold text-[#118a54] mb-6 text-center"
+      >
+        Sorry, there are no job vacancies at the moment.
+      </h2>
+
+      <h2
+        v-else-if="
+          isActiveLink('/') ||
+          isActiveLink('/dashboard/user') ||
+          isActiveLink('/dashboard/company')
+        "
         class="text-3xl font-bold text-[#118a54] mb-6 text-center"
       >
         Newly Added Jobs
       </h2>
 
-      <h2 v-else class="text-3xl font-bold text-[#118a54] mb-6 text-center">
+      <h2
+        v-else-if="
+          isActiveLink('/search') || isActiveLink('/dashboard/user/search')
+        "
+        class="text-3xl font-bold text-[#118a54] mb-6 text-center"
+      >
         All Available Jobs
+      </h2>
+
+      <h2
+        v-else-if="isActiveLink('/dashboard/company/search')"
+        class="text-3xl font-bold text-[#118a54] mb-6 text-center"
+      >
+        All Published Jobs
       </h2>
 
       <div v-if="state.isLoading" class="text-center py-6">
         <PulseLoader />
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <JobDetails
+      <div
+        v-if="state.jobs.length > 0"
+        class="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        <JobCardLists
           v-for="job in state.jobs.slice(0, limit || state.jobs.length)"
           :key="job.job_id"
           :job="job"
@@ -65,7 +114,7 @@ onMounted(async () => {
   <section class="m-auto max-w-lg my-10 px-6">
     <!-- Home Section -->
     <RouterLink
-      v-if="isActiveLink('/')"
+      v-if="isActiveLink('/') && state.jobs.length > 0"
       to="/search"
       class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
       >View all available jobs</RouterLink
@@ -73,10 +122,24 @@ onMounted(async () => {
 
     <!-- User Section -->
     <RouterLink
-      v-if="isActiveLink('/dashboard/user')"
+      v-if="isActiveLink('/dashboard/user') && state.jobs.length > 0"
       to="/dashboard/user/search"
       class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
       >View all available jobs</RouterLink
+    >
+
+    <!-- Company Section -->
+    <RouterLink
+      v-if="isActiveLink('/dashboard/company') && state.jobs.length > 0"
+      to="/dashboard/company/search"
+      class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
+      >View all available jobs</RouterLink
+    >
+    <RouterLink
+      v-else-if="isActiveLink('/dashboard/company') && state.jobs.length === 0"
+      to="/dashboard/company/add-job"
+      class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
+      >Add jobs Now</RouterLink
     >
   </section>
 </template>

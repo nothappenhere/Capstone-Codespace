@@ -1,7 +1,8 @@
 <script setup>
 import { reactive } from "vue";
-import { useToast } from "vue-toastification";
 import { RouterLink } from "vue-router";
+import { useToast } from "vue-toastification";
+import router from "@/router";
 import axios from "axios";
 import logo from "@/assets/img/logo.png";
 
@@ -11,14 +12,15 @@ const resetPass = reactive({
   isEmailValid: false,
 });
 
+const toast = useToast();
+
 const checkEmail = async () => {
-  const toast = useToast();
   if (!resetPass.email.includes("@")) {
-    return toast.error("Invalid email format");
+    return toast.error("Invalid email format, must be include '@' sign.");
   }
 
   try {
-    const response = await axios.post("http://localhost:8000/check-email", {
+    const response = await axios.post("/api/check-email", {
       email: resetPass.email,
     });
     if (response.data.exists) {
@@ -37,12 +39,11 @@ const checkEmail = async () => {
 };
 
 const handleSubmit = async () => {
-  const toast = useToast();
   if (!resetPass.email.includes("@")) {
-    return toast.error("Invalid email format");
+    return toast.error("Invalid email format, must be include '@' sign.");
   }
   if (resetPass.password.length < 8) {
-    return toast.error("Password must be at least 8 characters");
+    return toast.error("Password must be at least 8 characters long.");
   }
 
   const newCredential = {
@@ -51,10 +52,16 @@ const handleSubmit = async () => {
   };
 
   try {
-    await axios.post("http://localhost:8000/reset-password", newCredential);
+    await axios.post("/api/reset-password", newCredential);
+
     toast.success("Password reset successfully.");
+    router.push("/login");
   } catch (error) {
-    toast.error("Error resetting password.");
+    if (error.response && error.response.data.message) {
+      toast.error(error.response.data.message); // Pesan error dari server
+    } else {
+      toast.error("Error resetting password, please try again.");
+    }
   } finally {
     resetPass.email = "";
     resetPass.password = "";

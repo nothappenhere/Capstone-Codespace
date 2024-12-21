@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { useToast } from "vue-toastification";
 import router from "@/router";
@@ -9,13 +10,17 @@ const isActiveLink = (routePath) => {
   return route.path === routePath;
 };
 
-const role = localStorage.getItem("userRole");
-console.log(role);
+const role = ref(localStorage.getItem("userRole"));
 
 const toast = useToast();
 const logout = () => {
-  localStorage.removeItem("authToken"); // Hapus token dari localStorage
-  localStorage.removeItem("userRole"); // Hapus role user dari localStorage
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("companyId");
+  localStorage.removeItem("userEmail");
+
+  role.value = null;
 
   toast.success("Log out Successfully");
   router.push("/");
@@ -107,8 +112,77 @@ const logout = () => {
             </div>
           </div>
 
+          <!-- Company Section -->
+          <div v-if="role === 'company'" class="md:ml-auto">
+            <div class="flex space-x-2">
+              <RouterLink
+                to="/dashboard/company"
+                :class="[
+                  isActiveLink('/dashboard/company')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Home</RouterLink
+              >
+
+              <RouterLink
+                to="/dashboard/company/search"
+                :class="[
+                  isActiveLink('/dashboard/company/search')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >History</RouterLink
+              >
+
+              <RouterLink
+                to="/dashboard/company/add-job"
+                :class="[
+                  isActiveLink('/dashboard/company/add-job')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Add Job</RouterLink
+              >
+
+              <RouterLink
+                to="/dashboard/company/apply-history"
+                :class="[
+                  isActiveLink('/dashboard/company/apply-history')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Manage</RouterLink
+              >
+
+              <button
+                type="button"
+                @click="logout"
+                class="hover:bg-[#06281c] border-2 text-white rounded-md px-3 py-2"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+
           <!-- Home Section -->
-          <div class="md:ml-auto" v-else>
+          <div v-if="role === null" class="md:ml-auto">
             <div class="flex space-x-2">
               <RouterLink
                 to="/"

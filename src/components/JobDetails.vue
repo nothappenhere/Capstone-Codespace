@@ -23,20 +23,6 @@ const state = reactive({
   isLoading: true,
 });
 
-// const deleteJob = async () => {
-//   try {
-//     const confirm = window.confirm("Are you sure you want to delete this job?");
-//     if (confirm) {
-//       await axios.delete(`/api/jobs/${jobId}`);
-//       toast.success("Job Deleted Successfully");
-//       router.push("/jobs");
-//     }
-//   } catch (error) {
-//     console.error("Error deleting Job API", error);
-//     toast.error("Job Not Deleting");
-//   }
-// };
-
 const jobId = parseInt(route.params.id);
 const userId = localStorage.getItem("userId");
 const role = localStorage.getItem("userRole");
@@ -44,33 +30,54 @@ const role = localStorage.getItem("userRole");
 const checkRole = async () => {
   if (role === "user") {
     try {
-      await axios.post("http://localhost:8000/apply", {
+      await axios.post("/api/apply", {
         job_id: jobId,
         user_id: parseInt(userId),
       });
 
-      toast.success("Successfully applied for the job");
+      toast.success("Successfully applied for the job.");
       router.push("/dashboard/user/apply-history");
     } catch (error) {
       if (error.response && error.response.data.message) {
-        toast.error(error.response.data.message); // Pesan error dari server
+        toast.info(error.response.data.message); // Pesan error dari server
       } else {
         toast.error("Error while applying job, please try again in minutes.");
       }
     }
   } else {
-    router.push("/register/user");
+    toast.info("Sorry, you have to log in first to apply for that job.");
+    router.push("/login");
+  }
+};
+
+const deleteJob = async () => {
+  try {
+    const confirm = window.confirm("Are you sure you want to delete this job?");
+    if (!jobId || isNaN(jobId)) {
+      toast.error("Invalid Job ID");
+      return;
+    }
+
+    if (confirm) {
+      await axios.delete(`/api/delete/job/${jobId}`);
+
+      toast.success("Job Deleted Successfully");
+      router.push("/dashboard/company/search");
+    }
+  } catch (error) {
+    console.error("Error deleting Job API", error);
+    toast.error("Job Not Deleted");
   }
 };
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`http://localhost:8000/job/${jobId}`);
+    const response = await axios.get(`/api/job/${jobId}`);
     state.job = response.data.job;
+
+    state.isLoading = false;
   } catch (error) {
     console.error("Error fetching Job API", error);
-  } finally {
-    state.isLoading = false;
   }
 });
 </script>
@@ -122,12 +129,20 @@ onMounted(async () => {
 
             <h3 class="text-lg">Contact Email:</h3>
             <p class="my-2 bg-[#e3f5e3] px-2 py-3 font-bold">
-              {{ state.job.company.contact_info }}
+              {{ state.job.company.email }}
+            </p>
+
+            <h3 class="text-lg">Location:</h3>
+            <p class="my-2 bg-[#e3f5e3] px-2 py-3 font-bold">
+              {{ state.job.company.location }}
             </p>
           </div>
 
           <!-- Manage -->
-          <div class="bg-white p-6 rounded-lg shadow-md mt-6">
+          <div
+            v-if="role === 'user' || role != 'company'"
+            class="bg-white p-6 rounded-lg shadow-md mt-6"
+          >
             <h3 class="text-2xl font-bold mb-6">Interested in this job?</h3>
             <button
               type="button"
@@ -136,12 +151,25 @@ onMounted(async () => {
             >
               Apply Now!
             </button>
-            <!-- <button
+          </div>
+
+          <!-- Company Manage -->
+          <div
+            v-else-if="role === 'company'"
+            class="bg-white p-6 rounded-lg shadow-md mt-6"
+          >
+            <h3 class="text-2xl font-bold mb-6">Manage Job</h3>
+            <RouterLink
+              :to="`/dashboard/company/edit-job/${state.job.job_id}`"
+              class="bg-[#358436] hover:bg-[#307131] text-white text-center font-bold py-2 px-4 rounded-sm w-full focus:outline-none focus:shadow-outline mt-4 block"
+              >Edit Job</RouterLink
+            >
+            <button
               @click="deleteJob"
-              class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline mt-4 block"
+              class="bg-[#b10303] hover:bg-[#920a0a] text-white text-center font-bold py-2 px-4 rounded-sm w-full focus:outline-none focus:shadow-outline mt-4 block"
             >
               Delete Job
-            </button> -->
+            </button>
           </div>
         </aside>
       </div>

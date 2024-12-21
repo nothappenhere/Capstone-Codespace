@@ -8,8 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
-    "server": "json-server --watch src/jobs.json --port 8000",
-    "backend": "node --watch backend/server"
+    "server": "node --watch backend/server"
   },
   "dependencies": {
     "axios": "^1.7.7",
