@@ -6,10 +6,11 @@ import { useToast } from "vue-toastification";
 import { ref } from "vue";
 
 const userId = ref(localStorage.getItem("userId"));
+const userFullname = ref(localStorage.getItem("UserFullname"));
 const email = ref(localStorage.getItem("userEmail"));
 
 const form = reactive({
-  name: "",
+  name: userFullname.value,
   description: "",
   email: email.value,
   location: "",
@@ -23,17 +24,20 @@ const handleSubmit = async () => {
   }
 
   const companyDetails = {
+    user_id: userId.value,
     name: form.name,
     description: form.description,
     email: form.email,
     location: form.location,
-    user_id: userId.value,
   };
 
   try {
-    const response = await axios.post(`/api/company-details`, companyDetails);
+    const response = await axios.post(
+      `/api/company/details/add`,
+      companyDetails
+    );
 
-    if (response.data && response.data.id) {
+    if (response.data) {
       toast.success("Company Details Added Successfully");
       router.push(`/dashboard/company`);
     } else {

@@ -33,7 +33,7 @@ const handleSubmit = async () => {
   if (!state.selectedHistory) return;
 
   try {
-    const response = await axios.put("/api/update/job/status", {
+    const response = await axios.put("/api/job/update-status", {
       id: state.selectedHistory.job_id, // ID pekerjaan
       status: state.status, // Status baru
     });
@@ -54,7 +54,9 @@ const handleSubmit = async () => {
 onMounted(async () => {
   try {
     const id = role === "user" ? userId : companyId;
-    const response = await axios.get(`/api/apply/history/${id}?role=${role}`);
+    const response = await axios.get(
+      `/api/job/apply-history/${id}?role=${role}`
+    );
 
     state.history = response.data.apply_history;
   } catch (error) {

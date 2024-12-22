@@ -3,212 +3,216 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 /**
-  @desc   Login user based on their role
-  @route  POST /login/:role
-*/
-export const loginUser = (req, res, next) => {
+ * @desc Login user based on their role
+ * @route POST /login
+ */
+export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Ambil user berdasarkan email
-  db.query(
-    `SELECT users.*, companies.company_id
-     FROM users
-     LEFT JOIN companies ON users.user_id = companies.user_id
-     WHERE users.email = ?`,
-    [email],
-    async (err, result) => {
-      if (err || result.length === 0) {
-        return res.status(401).json({
-          error: "Invalid credentials, please check your email or password.",
-        });
-      }
-
-      const user = result[0];
-      try {
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-          return res.status(401).json({
-            error: "Invalid credentials, please check your email or password.",
-          });
-        }
-
-        // Buat token JWT
-        const token = jwt.sign(
-          { userId: user.id, email: user.email },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" } // Token berlaku selama 1 jam
-        );
-
-        res.status(200).json({
-          message: "Login successful",
-          token, // Kembalikan token ke frontend
-          user: {
-            id: user.user_id,
-            email: user.email,
-            role: user.role,
-            company_id: user.company_id || null, // Tambahkan company_id jika ada
-          },
-        });
-      } catch (err) {
-        next(err);
-      }
-    }
-  );
-};
-
-/**
-  @desc   Registration user based on their role
-  @route  POST /register/:role
-*/
-export const registerUser = async (req, res, next) => {
-  const { full_name, email, password } = req.body;
-  const role = req.params.role;
-
   try {
-    db.query("SELECT * FROM users WHERE email = ?", [email], (err, result) => {
-      if (err) {
-        return res.status(500).json({ error: "Database query failed" });
-      }
-      if (result.length > 0) {
-        return res.status(400).json({ error: "Email already in use" });
-      }
+    // Query user berdasarkan email
+    const [rows] = await db.promise().query(
+      `SELECT users.*, companies.company_id
+       FROM users
+       LEFT JOIN companies ON users.user_id = companies.user_id
+       WHERE users.email = ?`,
+      [email]
+    );
 
-      // Lanjutkan menyimpan user
-      const saltRounds = 10;
-      bcrypt.hash(password, saltRounds, (hashErr, hashedPassword) => {
-        if (hashErr) {
-          return res.status(500).json({ error: "Password hashing failed" });
-        }
-
-        db.query(
-          "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
-          [full_name, email, hashedPassword, role],
-          (insertErr, insertResult) => {
-            if (insertErr) {
-              return res.status(500).json({ error: "Database insert failed" });
-            }
-            res.status(201).json({ message: "User registered successfully" });
-          }
-        );
+    if (rows.length === 0) {
+      return res.status(401).json({
+        error: "Invalid credentials. Please check your email or password.",
       });
+    }
+
+    const user = rows[0];
+
+    // Periksa kecocokan password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        error: "Invalid credentials. Please check your email or password.",
+      });
+    }
+
+    // Generate token JWT
+    const token = jwt.sign(
+      { userId: user.user_id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(200).json({
+      message: "Login successful.",
+      token,
+      user: {
+        id: user.user_id,
+        full_name: user.full_name,
+        email: user.email,
+        role: user.role,
+        company_id: user.company_id || null,
+      },
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    console.error("Login error:", error);
+    next(error);
   }
 };
 
 /**
-  @desc   Check email exist for reset password
-  @route  POST /check-email
-*/
-export const checkEmailExist = (req, res, next) => {
+ * @desc Register a new user with the specified role
+ * @route POST /register/:role
+ */
+export const registerUser = async (req, res, next) => {
+  const { role } = req.params;
+  const { full_name, email, password } = req.body;
+
+  try {
+    // Periksa apakah email sudah terdaftar
+    const [existingUser] = await db
+      .promise()
+      .query("SELECT email FROM users WHERE email = ?", [email]);
+
+    if (existingUser.length > 0) {
+      return res.status(400).json({ error: "Email is already registered." });
+    }
+
+    // Hash password sebelum disimpan
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Simpan user baru ke database
+    const [result] = await db
+      .promise()
+      .query(
+        "INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)",
+        [full_name, email, hashedPassword, role]
+      );
+
+    res.status(201).json({
+      message: "User registered successfully.",
+      user_id: result.insertId,
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    next(error);
+  }
+};
+
+/**
+ * @desc Check if the given email is already registered
+ * @route POST /check-email
+ */
+export const checkEmailExist = async (req, res, next) => {
   const { email } = req.body;
 
-  db.query("SELECT * FROM users WHERE email = ?", [email], (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: "Database query failed" });
-    }
+  try {
+    const [result] = await db
+      .promise()
+      .query("SELECT email FROM users WHERE email = ?", [email]);
+
     if (result.length === 0) {
-      return res.status(200).json({
-        message: "If the email exists, you will receive further instructions.",
-        exists: false,
-      });
+      return res.status(200).json({ exists: false });
     }
-    res.status(200).json({ message: "Email found", exists: true });
-  });
+
+    res.status(200).json({ exists: true });
+  } catch (error) {
+    console.error("Email check error:", error);
+    next(error);
+  }
 };
 
 /**
-  @desc   Continue reset password if email exist
-  @route  POST /reset-password
-*/
-export const resetPasswordUser = (req, res, next) => {
+ * @desc Reset the user's password
+ * @route POST /reset-password
+ */
+export const resetPasswordUser = async (req, res, next) => {
   const { email, password } = req.body;
 
-  const saltRounds = 10;
-  bcrypt.hash(password, saltRounds, (hashErr, hashedPassword) => {
-    if (hashErr) {
-      return res.status(500).json({ error: "Password hashing failed" });
+  try {
+    // Hash password baru
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update password di database
+    const [result] = await db
+      .promise()
+      .query("UPDATE users SET password = ? WHERE email = ?", [
+        hashedPassword,
+        email,
+      ]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Email not found." });
     }
 
-    db.query(
-      "UPDATE users SET password = ? WHERE email = ?",
-      [hashedPassword, email],
-      (updateErr, result) => {
-        if (updateErr) {
-          return res.status(500).json({ error: "Database update failed" });
-        }
-        res.status(200).json({ message: "Password reset successfully" });
-      }
-    );
-  });
+    res.status(200).json({ message: "Password reset successfully." });
+  } catch (error) {
+    console.error("Password reset error:", error);
+    next(error);
+  }
 };
 
 /**
-  @desc   Check company detail status exist
-  @route  GET /company-status/:user_id
-*/
+ * @desc Check if the user has completed their company details
+ * @route GET /company-status/:user_id
+ */
 export const checkCompanyDetailStatus = async (req, res, next) => {
   const { user_id } = req.params;
 
-  // Validasi input
-  if (!user_id) {
-    return res.status(400).json({ message: "User ID are required." });
-  }
+  try {
+    const [result] = await db
+      .promise()
+      .query("SELECT company_id FROM companies WHERE user_id = ?", [user_id]);
 
-  db.query(
-    `
-    SELECT * FROM companies WHERE user_id = ?;
-  `,
-    [user_id],
-    (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res
-          .status(500)
-          .json({ message: "Error checking company details status" });
-      }
-
-      if (result[0]) {
-        res.status(200).json({ isComplete: true });
-      } else {
-        res.status(200).json({ isComplete: false });
-      }
+    if (result[0]) {
+      res.status(200).json({ isComplete: true });
+    } else {
+      res.status(200).json({ isComplete: false });
     }
-  );
+
+    // res.status(200).json({
+    //   companyDetailsFilled: result.length > 0,
+    // });
+  } catch (error) {
+    console.error("Company detail status check error:", error);
+    next(error);
+  }
 };
 
 /**
-  @desc   Add company details if status false
-  @route  POST /company-details
-*/
-export const addCompanyDetails = (req, res, next) => {
-  const { name, description, email, location, user_id } = req.body;
+ * @desc Add or update company details for a user
+ * @route POST /company/details/add
+ */
+export const addCompanyDetails = async (req, res, next) => {
+  const { user_id, name, description, email, location } = req.body;
 
-  // Validasi input
-  if (!name || !description || !email || !location) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
+  try {
+    // Periksa apakah user sudah memiliki detail perusahaan
+    const [existingCompany] = await db
+      .promise()
+      .query("SELECT company_id FROM companies WHERE user_id = ?", [user_id]);
 
-  db.query(
-    `
-    INSERT INTO companies (name, description, email, location, user_id)
-    VALUES (?, ?, ?, ?, ?)
-  `,
-    [name, description, email, location, user_id],
-    (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res
-          .status(500)
-          .json({ message: "Failed to add company details." });
-      }
+    if (existingCompany.length > 0) {
+      // Update detail perusahaan jika sudah ada
+      await db.promise().query(
+        `UPDATE companies
+         SET name = ?, description = ?, email = ?, location = ?
+         WHERE user_id = ?`,
+        [name, description, email, location, user_id]
+      );
 
-      // Berhasil menambahkan data
-      res.status(201).json({
-        message: "Company Details Added Successfully",
-        id: result.insertId, // ID perusahaan yang baru dibuat
-      });
+      return res.status(200).json({ message: "Company details updated." });
     }
-  );
+
+    // Tambahkan detail perusahaan baru
+    await db.promise().query(
+      `INSERT INTO companies (user_id, name, description, email, location)
+       VALUES (?, ?, ?, ?, ?)`,
+      [user_id, name, description, email, location]
+    );
+
+    res.status(201).json({ message: "Company details added." });
+  } catch (error) {
+    console.error("Add company details error:", error);
+    next(error);
+  }
 };

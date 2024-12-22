@@ -17,19 +17,27 @@ import {
 } from "../middlewares/authValidation.js";
 
 //* POST user login
+// Route untuk login user dengan validasi input
 router.post("/login", validateLogin, loginUser);
 
 //* POST user registration
+// Route untuk registrasi user sesuai peran (role)
 router.post("/register/:role", validateRegister, registerUser);
 
-//* POST Check email exist
+//* POST Check email existence
+// Route untuk memeriksa apakah email sudah terdaftar
 router.post("/check-email", checkEmail, checkEmailExist);
+
 //* POST reset password
+// Route untuk mereset password user
 router.post("/reset-password", validateResetPassword, resetPasswordUser);
 
 //* GET company details status
+// Route untuk memeriksa apakah detail perusahaan sudah diisi
 router.get("/company-status/:user_id", checkCompanyDetailStatus);
+
 //* POST Add company details
-router.post("/company-details", addCompanyDetails);
+// Route untuk menambah detail perusahaan jika belum lengkap
+router.post("/company/details/add", addCompanyDetails);
 
 export default router;

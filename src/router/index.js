@@ -4,20 +4,14 @@ import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import ForgotPasswordView from "@/views/ForgotPasswordView.vue";
-
 import JobsView from "@/views/JobsView.vue";
 import JobDetailsView from "@/views/JobDetailsView.vue";
-
-import AddJobView from "@/views/AddJobView.vue";
-import EditJobView from "@/views/EditJobView.vue";
-
-import NotFoundView from "@/views/NotFoundView.vue";
-
 import DashboardView from "@/dashboard/DashboardView.vue";
 import HistoryView from "@/dashboard/HistoryView.vue";
-
+import AddJobView from "@/views/AddJobView.vue";
+import EditJobView from "@/views/EditJobView.vue";
 import CompanyDetailsView from "@/dashboard/CompanyDetailsView.vue";
-// import axios from "axios";
+import NotFoundView from "@/views/NotFoundView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

@@ -1,77 +1,55 @@
-import { body, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 
+// Fungsi untuk menangani error validasi
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};
+
+// Validasi login
 export const validateLogin = [
-  body("email")
-    .isEmail()
-    .withMessage("Invalid email format, must be inclued '@' sign."),
+  body("email").isEmail().withMessage("Invalid email format."),
   body("password")
     .notEmpty()
-    .withMessage("Password is required")
+    .withMessage("Password is required.")
     .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters long!"),
-
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
+    .withMessage("Password must be at least 8 characters long."),
+  handleValidationErrors,
 ];
 
+// Validasi registrasi
 export const validateRegister = [
+  param("role").isIn(["company", "user"]).withMessage("Invalid role."),
   body("full_name")
     .notEmpty()
-    .withMessage("Full Name is required!")
+    .withMessage("Full Name is required.")
     .isLength({ min: 3 })
-    .withMessage("Full Name must be at least 3 characters long."),
-  body("email")
-    .isEmail()
-    .withMessage("Invalid email format, must be inclued '@' sign."),
+    .withMessage("Full Name must be at least 3 characters."),
+  body("email").isEmail().withMessage("Invalid email format."),
   body("password")
     .notEmpty()
-    .withMessage("Password is required!")
+    .withMessage("Password is required.")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long."),
-
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
+  handleValidationErrors,
 ];
 
+// Validasi cek email
 export const checkEmail = [
-  body("email")
-    .isEmail()
-    .withMessage("Invalid email format, must be inclued '@' sign."),
-
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
+  body("email").isEmail().withMessage("Invalid email format."),
+  handleValidationErrors,
 ];
 
+// Validasi reset password
 export const validateResetPassword = [
-  body("email")
-    .isEmail()
-    .withMessage("Invalid email format, must be inclued '@' sign."),
+  body("email").isEmail().withMessage("Invalid email format."),
   body("password")
     .notEmpty()
-    .withMessage("Password is required!")
+    .withMessage("Password is required.")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long."),
-
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
+  handleValidationErrors,
 ];

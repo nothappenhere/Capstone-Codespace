@@ -8,7 +8,7 @@ import axios from "axios";
 import BackButton from "@/components/BackButton.vue";
 
 const route = useRoute();
-const jobId = route.params.id;
+const jobId = parseInt(route.params.id);
 const toast = useToast();
 
 const form = reactive({
@@ -45,7 +45,7 @@ const handleSubmit = async () => {
   };
 
   try {
-    const response = await axios.put(`/api/update/job/${jobId}`, updatedJob);
+    const response = await axios.put(`/api/job/update/${jobId}`, updatedJob);
 
     if (response.data && response.data.id) {
       toast.success("Job Updated Successfully");

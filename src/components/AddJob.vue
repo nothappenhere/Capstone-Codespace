@@ -37,7 +37,7 @@ const handleSubmit = async () => {
   };
 
   try {
-    const response = await axios.post(`/api/add/job`, newJob);
+    const response = await axios.post(`/api/job/add`, newJob);
 
     if (response.data && response.data.id) {
       toast.success("Job Added Successfully");

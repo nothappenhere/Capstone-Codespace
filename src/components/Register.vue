@@ -20,6 +20,7 @@ const register = reactive({
 
 const handleSubmit = async () => {
   const toast = useToast();
+
   if (register.full_name === "") {
     return toast.error("Full name cannot be empty");
   } else if (register.full_name.length < 3) {

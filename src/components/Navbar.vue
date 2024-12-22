@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { useToast } from "vue-toastification";
 import router from "@/router";
@@ -12,8 +12,9 @@ const isActiveLink = (routePath) => {
 
 const role = ref(localStorage.getItem("userRole"));
 
-const toast = useToast();
 const logout = () => {
+  const toast = useToast();
+
   localStorage.removeItem("authToken");
   localStorage.removeItem("userId");
   localStorage.removeItem("userRole");
@@ -43,144 +44,6 @@ const logout = () => {
             >
           </RouterLink>
 
-          <!-- User Section -->
-          <div v-if="role === 'user'" class="md:ml-auto">
-            <div class="flex space-x-2">
-              <RouterLink
-                to="/dashboard/user"
-                :class="[
-                  isActiveLink('/dashboard/user')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >Home</RouterLink
-              >
-
-              <RouterLink
-                to="/dashboard/user/search"
-                :class="[
-                  isActiveLink('/dashboard/user/search')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >Job search</RouterLink
-              >
-
-              <!-- <RouterLink
-                to="/jobs/add"
-                :class="[
-                  isActiveLink('/jobs/add')
-                    ? 'bg-[#06281c] hover:bg-[#0e6e46]'
-                    : 'hover:bg-[#0e6e46] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >Add Job</RouterLink
-              > -->
-
-              <RouterLink
-                to="/dashboard/user/apply-history"
-                :class="[
-                  isActiveLink('/dashboard/user/apply-history')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >History</RouterLink
-              >
-
-              <button
-                type="button"
-                @click="logout"
-                class="hover:bg-[#06281c] border-2 text-white rounded-md px-3 py-2"
-              >
-                Log out
-              </button>
-            </div>
-          </div>
-
-          <!-- Company Section -->
-          <div v-if="role === 'company'" class="md:ml-auto">
-            <div class="flex space-x-2">
-              <RouterLink
-                to="/dashboard/company"
-                :class="[
-                  isActiveLink('/dashboard/company')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >Home</RouterLink
-              >
-
-              <RouterLink
-                to="/dashboard/company/search"
-                :class="[
-                  isActiveLink('/dashboard/company/search')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >History</RouterLink
-              >
-
-              <RouterLink
-                to="/dashboard/company/add-job"
-                :class="[
-                  isActiveLink('/dashboard/company/add-job')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >Add Job</RouterLink
-              >
-
-              <RouterLink
-                to="/dashboard/company/apply-history"
-                :class="[
-                  isActiveLink('/dashboard/company/apply-history')
-                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
-                    : 'hover:bg-[#06281c] hover:text-white',
-                  'text-white',
-                  'rounded-md',
-                  'px-3',
-                  'py-2',
-                ]"
-                >Manage</RouterLink
-              >
-
-              <button
-                type="button"
-                @click="logout"
-                class="hover:bg-[#06281c] border-2 text-white rounded-md px-3 py-2"
-              >
-                Log out
-              </button>
-            </div>
-          </div>
-
           <!-- Home Section -->
           <div v-if="role === null" class="md:ml-auto">
             <div class="flex space-x-2">
@@ -208,7 +71,7 @@ const logout = () => {
                   'px-3',
                   'py-2',
                 ]"
-                >Job search</RouterLink
+                >Search job</RouterLink
               >
               <RouterLink
                 to="/login"
@@ -236,6 +99,123 @@ const logout = () => {
                 ]"
                 >FOR COMPANIES</RouterLink
               >
+            </div>
+          </div>
+
+          <!-- User Section -->
+          <div v-else-if="role === 'user'" class="md:ml-auto">
+            <div class="flex space-x-2">
+              <RouterLink
+                to="/dashboard/user"
+                :class="[
+                  isActiveLink('/dashboard/user')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Home</RouterLink
+              >
+              <RouterLink
+                to="/dashboard/user/search"
+                :class="[
+                  isActiveLink('/dashboard/user/search')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Search job</RouterLink
+              >
+              <RouterLink
+                to="/dashboard/user/apply-history"
+                :class="[
+                  isActiveLink('/dashboard/user/apply-history')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Apply History</RouterLink
+              >
+              <button
+                type="button"
+                @click="logout"
+                class="hover:bg-[#06281c] border-2 text-white rounded-md px-3 py-2"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+
+          <!-- Company Section -->
+          <div v-else-if="role === 'company'" class="md:ml-auto">
+            <div class="flex space-x-2">
+              <RouterLink
+                to="/dashboard/company"
+                :class="[
+                  isActiveLink('/dashboard/company')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Home</RouterLink
+              >
+              <RouterLink
+                to="/dashboard/company/search"
+                :class="[
+                  isActiveLink('/dashboard/company/search')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Job history</RouterLink
+              >
+              <RouterLink
+                to="/dashboard/company/add-job"
+                :class="[
+                  isActiveLink('/dashboard/company/add-job')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Add job</RouterLink
+              >
+              <RouterLink
+                to="/dashboard/company/apply-history"
+                :class="[
+                  isActiveLink('/dashboard/company/apply-history')
+                    ? 'bg-[#0e6e46] hover:bg-[#06281c]'
+                    : 'hover:bg-[#06281c] hover:text-white',
+                  'text-white',
+                  'rounded-md',
+                  'px-3',
+                  'py-2',
+                ]"
+                >Manage applicant</RouterLink
+              >
+              <button
+                type="button"
+                @click="logout"
+                class="hover:bg-[#06281c] border-2 text-white rounded-md px-3 py-2"
+              >
+                Log out
+              </button>
             </div>
           </div>
         </div>

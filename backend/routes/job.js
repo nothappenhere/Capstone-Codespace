@@ -4,35 +4,60 @@ const router = express.Router();
 import {
   getAllJobs,
   getSingleJob,
-  ApplyJob,
+  applyJob,
   getApplicationHistory,
   addJob,
   updateJob,
   deleteJob,
   updateJobStatus,
 } from "../controllers/jobController.js";
+import {
+  authenticateUser,
+  authorizeRole,
+} from "../middlewares/autenticateUserAndRole.js";
 
 //* GET all jobs with pagination and filtering
+// Route untuk mendapatkan semua pekerjaan (jobs) dengan paginasi dan filter
 router.get("/jobs", getAllJobs);
 
 //* GET a single job by ID
+// Route untuk mendapatkan pekerjaan berdasarkan ID
 router.get("/job/:id", getSingleJob);
 
-//* POST user applying job
-router.post("/apply", ApplyJob);
+//* POST user applying for a job
+// Route untuk melakukan pelamaran pekerjaan
+router.post("/apply", applyJob);
 
-//* GET a user application history
-router.get("/apply/history/:id", getApplicationHistory);
-//* PUT update job status
-router.put("/update/job/status", updateJobStatus);
+//* GET a user's application history
+// Route untuk mendapatkan riwayat lamaran pekerjaan pengguna
+router.get("/job/apply-history/:id", getApplicationHistory);
 
-//* POST adding a new job
-router.post("/add/job", addJob);
+//* POST add a new job
+// Route untuk perusahaan dapat menambahkan pekerjaan baru
+router.post("/job/add", [authenticateUser, authorizeRole(["company"])], addJob);
 
 //* PUT update job by ID
-router.put("/update/job/:id", updateJob);
+// Route untuk perusahaan memperbarui pekerjaan berdasarkan ID
+router.put(
+  "/job/update/:id",
+  [authenticateUser, authorizeRole(["company"])],
+  updateJob
+);
 
 //* DELETE job by ID
-router.delete("/delete/job/:id", deleteJob);
+// Route untuk perusahaan dapat menghapus pekerjaan berdasarkan ID
+router.delete(
+  "/job/delete/:id",
+  [authenticateUser, authorizeRole(["company"])],
+  deleteJob
+);
+
+//* PUT update job status
+// Route untuk perusahaan memperbarui status pekerjaan pelamar
+router.put(
+  "/job/update-status",
+  [authenticateUser, authorizeRole(["company"])],
+  updateJobStatus
+);
 
 export default router;

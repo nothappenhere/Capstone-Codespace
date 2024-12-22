@@ -30,6 +30,7 @@ const handleSubmit = async () => {
     const { token, user } = response.data; // Ambil token dan user dari respons
     localStorage.setItem("authToken", token); // Simpan token di localStorage
     localStorage.setItem("userId", user.id); // Simpan id user di localStorage
+    localStorage.setItem("UserFullname", user.full_name); // Simpan nama lengkap user di localStorage
     localStorage.setItem("userRole", user.role); // Simpan role user di localStorage
 
     toast.success("Sign in Successfully");

@@ -37,16 +37,18 @@ onMounted(async () => {
 <template>
   <section class="bg-[#eefbf4] px-4 py-10">
     <div class="container-xl lg:container m-auto">
-      <h2
+      <!-- <h2
         v-if="state.jobs.length === 0 && isActiveLink('/dashboard/company')"
         class="text-4xl font-bold text-[#118a54] mb-6 text-center"
       >
         You haven't added any jobs
-      </h2>
+      </h2> -->
 
       <div
-        v-else-if="
-          state.jobs.length === 0 && isActiveLink('/dashboard/company/search')
+        v-if="
+          state.jobs.length === 0 &&
+          (isActiveLink('/dashboard/company') ||
+            isActiveLink('/dashboard/company/search'))
         "
         class="flex flex-col items-center justify-center"
       >
@@ -61,17 +63,20 @@ onMounted(async () => {
       </div>
 
       <h2
-        v-else-if="state.jobs.length === 0"
-        class="text-4xl font-bold text-[#118a54] mb-6 text-center"
+        v-else-if="
+          state.jobs.length > 0 && isActiveLink('/dashboard/company/search')
+        "
+        class="text-3xl font-bold text-[#118a54] mb-6 text-center"
       >
-        Sorry, there are no job vacancies at the moment.
+        All Published Jobs
       </h2>
 
       <h2
         v-else-if="
-          isActiveLink('/') ||
-          isActiveLink('/dashboard/user') ||
-          isActiveLink('/dashboard/company')
+          state.jobs.length > 0 &&
+          (isActiveLink('/') ||
+            isActiveLink('/dashboard/user') ||
+            isActiveLink('/dashboard/company'))
         "
         class="text-3xl font-bold text-[#118a54] mb-6 text-center"
       >
@@ -80,7 +85,8 @@ onMounted(async () => {
 
       <h2
         v-else-if="
-          isActiveLink('/search') || isActiveLink('/dashboard/user/search')
+          state.jobs.length > 0 &&
+          (isActiveLink('/search') || isActiveLink('/dashboard/user/search'))
         "
         class="text-3xl font-bold text-[#118a54] mb-6 text-center"
       >
@@ -88,10 +94,10 @@ onMounted(async () => {
       </h2>
 
       <h2
-        v-else-if="isActiveLink('/dashboard/company/search')"
-        class="text-3xl font-bold text-[#118a54] mb-6 text-center"
+        v-else-if="state.jobs.length === 0"
+        class="text-4xl font-bold text-[#118a54] mb-6 text-center"
       >
-        All Published Jobs
+        Sorry, there are no job vacancies at the moment.
       </h2>
 
       <div v-if="state.isLoading" class="text-center py-6">
@@ -114,7 +120,7 @@ onMounted(async () => {
   <section class="m-auto max-w-lg my-10 px-6">
     <!-- Home Section -->
     <RouterLink
-      v-if="isActiveLink('/') && state.jobs.length > 0"
+      v-if="state.jobs.length > 0 && isActiveLink('/')"
       to="/search"
       class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
       >View all available jobs</RouterLink
@@ -122,7 +128,7 @@ onMounted(async () => {
 
     <!-- User Section -->
     <RouterLink
-      v-if="isActiveLink('/dashboard/user') && state.jobs.length > 0"
+      v-if="state.jobs.length > 0 && isActiveLink('/dashboard/user')"
       to="/dashboard/user/search"
       class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
       >View all available jobs</RouterLink
@@ -130,13 +136,13 @@ onMounted(async () => {
 
     <!-- Company Section -->
     <RouterLink
-      v-if="isActiveLink('/dashboard/company') && state.jobs.length > 0"
+      v-if="state.jobs.length > 0 && isActiveLink('/dashboard/company')"
       to="/dashboard/company/search"
       class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
-      >View all available jobs</RouterLink
+      >View all jobs</RouterLink
     >
     <RouterLink
-      v-else-if="isActiveLink('/dashboard/company') && state.jobs.length === 0"
+      v-else-if="state.jobs.length === 0 && isActiveLink('/dashboard/company')"
       to="/dashboard/company/add-job"
       class="block bg-[#0e573a] text-white text-center py-4 px-6 rounded-xl hover:bg-[#0f6d47]"
       >Add jobs Now</RouterLink

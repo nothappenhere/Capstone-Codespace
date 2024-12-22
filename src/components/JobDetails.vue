@@ -32,7 +32,7 @@ const checkRole = async () => {
     try {
       await axios.post("/api/apply", {
         job_id: jobId,
-        user_id: parseInt(userId),
+        user_id: userId,
       });
 
       toast.success("Successfully applied for the job.");
@@ -45,7 +45,7 @@ const checkRole = async () => {
       }
     }
   } else {
-    toast.info("Sorry, you have to log in first to apply for that job.");
+    toast.info("Sorry, you have to log in first to apply for the job.");
     router.push("/login");
   }
 };
@@ -59,7 +59,7 @@ const deleteJob = async () => {
     }
 
     if (confirm) {
-      await axios.delete(`/api/delete/job/${jobId}`);
+      await axios.delete(`/api/job/delete/${jobId}`);
 
       toast.success("Job Deleted Successfully");
       router.push("/dashboard/company/search");

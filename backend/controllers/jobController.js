@@ -1,9 +1,9 @@
 import db from "../db/connection.js";
 
 /**
-  @desc   Getting all jobs with pagination and filtering
-  @route  GET /jobs
-*/
+ * @desc   Getting all jobs with pagination and filtering
+ * @route  GET /jobs
+ */
 export const getAllJobs = (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -41,9 +41,9 @@ export const getAllJobs = (req, res, next) => {
 };
 
 /**
-  @desc   Getting single job with associated company based on job ID
-  @route  GET /job/:id
-*/
+ * @desc   Getting single job with associated company based on job ID
+ * @route  GET /job/:id
+ */
 export const getSingleJob = (req, res, next) => {
   const id = parseInt(req.params.id);
 
@@ -95,10 +95,10 @@ export const getSingleJob = (req, res, next) => {
 };
 
 /**
-  @desc   User applying for a job
-  @route  POST /apply
-*/
-export const ApplyJob = (req, res, next) => {
+ * @desc   User applying for a job
+ * @route  POST /apply
+ */
+export const applyJob = (req, res, next) => {
   const { job_id, user_id } = req.body;
 
   // Validasi input
@@ -162,9 +162,9 @@ export const ApplyJob = (req, res, next) => {
 };
 
 /**
-  @desc   Application history for user or company
-  @route  GET /apply/history/:id
-*/
+ * @desc   Application history for user or company
+ * @route  GET /job/apply-history/:id
+ */
 export const getApplicationHistory = (req, res) => {
   const id = parseInt(req.params.id);
   const role = req.query.role; // Ambil role dari query parameter
@@ -245,9 +245,9 @@ export const getApplicationHistory = (req, res) => {
 };
 
 /**
-  @desc   Adding a new job
-  @route  POST /add/job
-*/
+ * @desc   Adding a new job
+ * @route  POST /job/add
+ */
 export const addJob = (req, res, next) => {
   const { title, type, description, location, salary, company_id } = req.body;
 
@@ -278,9 +278,9 @@ export const addJob = (req, res, next) => {
 };
 
 /**
-  @desc   Update job by ID
-  @route  DELETE /delete/job/:id
-*/
+ * @desc   Update job by ID
+ * @route  PUT /job/update/:id
+ */
 export const updateJob = (req, res, next) => {
   const jobId = parseInt(req.params.id);
 
@@ -320,9 +320,9 @@ export const updateJob = (req, res, next) => {
 };
 
 /**
-  @desc   Delete job by ID
-  @route  DELETE /delete/job/:id
-*/
+ * @desc   Delete job by ID
+ * @route  DELETE /job/delete/:id
+ */
 export const deleteJob = (req, res, next) => {
   const jobId = parseInt(req.params.id);
 
@@ -351,6 +351,10 @@ export const deleteJob = (req, res, next) => {
   });
 };
 
+/**
+ * @desc   Update job application status
+ * @route  PUT /job/update-status
+ */
 export const updateJobStatus = async (req, res, next) => {
   const { id, status } = req.body;
 
