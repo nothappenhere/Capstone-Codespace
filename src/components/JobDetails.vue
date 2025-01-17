@@ -30,7 +30,7 @@ const role = localStorage.getItem("userRole");
 const checkRole = async () => {
   if (role === "user") {
     try {
-      await axios.post("/api/apply", {
+      await axios.post("/api/jobs/apply", {
         job_id: jobId,
         user_id: userId,
       });
@@ -38,15 +38,15 @@ const checkRole = async () => {
       toast.success("Successfully applied for the job.");
       router.push("/dashboard/user/apply-history");
     } catch (error) {
-      if (error.response && error.response.data.message) {
-        toast.info(error.response.data.message); // Pesan error dari server
+      if (error.response && error.response.data.error) {
+        toast.info(error.response.data.error); // Pesan error dari server
       } else {
-        toast.error("Error while applying job, please try again in minutes.");
+        console.error("Error fetching Jobs API", error);
       }
     }
   } else {
-    toast.info("Sorry, you have to log in first to apply for the job.");
     router.push("/login");
+    toast.info("Sorry, you have to log in first to apply for that job.");
   }
 };
 
@@ -59,7 +59,7 @@ const deleteJob = async () => {
     }
 
     if (confirm) {
-      await axios.delete(`/api/job/delete/${jobId}`);
+      await axios.delete(`/api/jobs/delete/${jobId}`);
 
       toast.success("Job Deleted Successfully");
       router.push("/dashboard/company/search");
@@ -72,12 +72,15 @@ const deleteJob = async () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`/api/job/${jobId}`);
-    state.job = response.data.job;
-
+    const response = await axios.get(`/api/jobs/${jobId}`);
+    state.job = response.data.data;
     state.isLoading = false;
   } catch (error) {
-    console.error("Error fetching Job API", error);
+    if (error.response && error.response.data.error) {
+      toast.error(error.response.data.error); // Pesan error dari server
+    } else {
+      console.error("Error fetching Jobs API", error);
+    }
   }
 });
 </script>
@@ -121,24 +124,24 @@ onMounted(async () => {
         <aside>
           <!-- Company Info -->
           <div class="bg-white p-6 rounded-md shadow-md">
-            <h2 class="text-3xl font-bold">{{ state.job.company.name }}</h2>
+            <h2 class="text-3xl font-bold">{{ state.job.company_name }}</h2>
 
-            <p class="text-md my-2">{{ state.job.company.description }}</p>
+            <p class="text-md my-2">{{ state.job.company_description }}</p>
 
             <hr class="my-4" />
 
             <h3 class="text-lg">Contact Email:</h3>
             <p class="my-2 bg-[#e3f5e3] px-2 py-3 font-bold">
-              {{ state.job.company.email }}
+              {{ state.job.company_email }}
             </p>
 
             <h3 class="text-lg">Location:</h3>
             <p class="my-2 bg-[#e3f5e3] px-2 py-3 font-bold">
-              {{ state.job.company.location }}
+              {{ state.job.company_location }}
             </p>
           </div>
 
-          <!-- Manage -->
+          <!-- User Manage -->
           <div
             v-if="role === 'user' || role != 'company'"
             class="bg-white p-6 rounded-lg shadow-md mt-6"

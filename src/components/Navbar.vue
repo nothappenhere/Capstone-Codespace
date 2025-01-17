@@ -44,7 +44,7 @@ const logout = () => {
             >
           </RouterLink>
 
-          <!-- Home Section -->
+          <!-- Default Section -->
           <div v-if="role === null" class="md:ml-auto">
             <div class="flex space-x-2">
               <RouterLink

@@ -1,4 +1,4 @@
-import db from "../db/connection.js";
+import db from "../config/database.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -13,9 +13,9 @@ export const loginUser = async (req, res, next) => {
     // Query user berdasarkan email
     const [rows] = await db.promise().query(
       `SELECT users.*, companies.company_id
-       FROM users
-       LEFT JOIN companies ON users.user_id = companies.user_id
-       WHERE users.email = ?`,
+        FROM users
+        LEFT JOIN companies ON users.user_id = companies.user_id
+        WHERE users.email = ?`,
       [email]
     );
 
@@ -31,7 +31,7 @@ export const loginUser = async (req, res, next) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
-        error: "Invalid credentials.",
+        error: "Invalid credentials. Please check your email or password.",
       });
     }
 
@@ -45,7 +45,7 @@ export const loginUser = async (req, res, next) => {
     res.status(200).json({
       message: "Login successful.",
       token,
-      user: {
+      data: {
         id: user.user_id,
         full_name: user.full_name,
         email: user.email,
@@ -111,10 +111,16 @@ export const checkEmailExist = async (req, res, next) => {
       .query("SELECT email FROM users WHERE email = ?", [email]);
 
     if (result.length === 0) {
-      return res.status(200).json({ exists: false });
+      return res.status(404).json({
+        error: "Email not found.",
+        exists: false,
+      });
     }
 
-    res.status(200).json({ exists: true });
+    res.status(200).json({
+      message: "Email is already registered.",
+      exists: true,
+    });
   } catch (error) {
     console.error("Email check error:", error);
     next(error);
@@ -152,26 +158,28 @@ export const resetPasswordUser = async (req, res, next) => {
 };
 
 /**
- * @desc Check if the user has completed their company details
- * @route GET /company-status/:user_id
+ * @desc Check if the company has completed their company details
+ * @route GET /company/details/:id
  */
 export const checkCompanyDetailStatus = async (req, res, next) => {
-  const { user_id } = req.params;
+  const { id } = req.params;
 
   try {
     const [result] = await db
       .promise()
-      .query("SELECT company_id FROM companies WHERE user_id = ?", [user_id]);
+      .query("SELECT company_id FROM companies WHERE user_id = ?", [id]);
 
     if (result[0]) {
-      res.status(200).json({ isComplete: true });
+      res.status(200).json({
+        message: "Company details already registered.",
+        isComplete: true,
+      });
     } else {
-      res.status(200).json({ isComplete: false });
+      res.status(200).json({
+        error: "Company details not yet registered.",
+        isComplete: false,
+      });
     }
-
-    // res.status(200).json({
-    //   companyDetailsFilled: result.length > 0,
-    // });
   } catch (error) {
     console.error("Company detail status check error:", error);
     next(error);
@@ -180,7 +188,7 @@ export const checkCompanyDetailStatus = async (req, res, next) => {
 
 /**
  * @desc Add or update company details for a user
- * @route POST /company/details/add
+ * @route POST /company/details
  */
 export const addCompanyDetails = async (req, res, next) => {
   const { user_id, name, description, email, location } = req.body;
@@ -200,17 +208,20 @@ export const addCompanyDetails = async (req, res, next) => {
         [name, description, email, location, user_id]
       );
 
-      return res.status(200).json({ message: "Company details updated." });
+      return res.status(201).json({ message: "Company details updated." });
     }
 
     // Tambahkan detail perusahaan baru
-    await db.promise().query(
+    const [result] = await db.promise().query(
       `INSERT INTO companies (user_id, name, description, email, location)
        VALUES (?, ?, ?, ?, ?)`,
       [user_id, name, description, email, location]
     );
 
-    res.status(201).json({ message: "Company details added." });
+    res.status(201).json({
+      message: "Company details added.",
+      company_id: result.insertId,
+    });
   } catch (error) {
     console.error("Add company details error:", error);
     next(error);

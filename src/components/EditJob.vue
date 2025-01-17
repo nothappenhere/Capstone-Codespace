@@ -45,28 +45,27 @@ const handleSubmit = async () => {
   };
 
   try {
-    const response = await axios.put(`/api/job/update/${jobId}`, updatedJob);
+    const response = await axios.put(`/api/jobs/update/${jobId}`, updatedJob);
 
-    if (response.data && response.data.id) {
+    if (response.data && response.data.job_id) {
       toast.success("Job Updated Successfully");
-      router.push(`/dashboard/company/job/${response.data.id}`);
+      router.push(`/dashboard/company/job/${response.data.job_id}`);
     } else {
       toast.error("Failed to update job. Please try again.");
     }
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message); // Pesan error dari server
+    if (error.response && error.response.data.error) {
+      toast.info(error.response.data.error); // Pesan error dari server
     } else {
-      console.error("Error updating job API", error);
-      toast.error("Job Was Not Updated");
+      console.error("Error fetching Jobs API", error);
     }
   }
 };
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`/api/job/${jobId}`);
-    state.job = response.data.job;
+    const response = await axios.get(`/api/jobs/${jobId}`);
+    state.job = response.data.data;
 
     form.title = state.job.title;
     form.type = state.job.type;

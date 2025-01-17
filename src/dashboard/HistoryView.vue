@@ -33,8 +33,8 @@ const handleSubmit = async () => {
   if (!state.selectedHistory) return;
 
   try {
-    const response = await axios.put("/api/job/update-status", {
-      id: state.selectedHistory.job_id, // ID pekerjaan
+    const response = await axios.put("/api/jobs/update/status", {
+      id: state.selectedHistory.id, // ID pekerjaan
       status: state.status, // Status baru
     });
 
@@ -43,8 +43,8 @@ const handleSubmit = async () => {
     state.isHidden = true; // Tutup modal
     toast.success("Job Status Updated Successfully.");
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message);
+    if (error.response && error.response.data.error) {
+      toast.error(error.response.data.error);
     } else {
       toast.error("Job Status was not updated.");
     }
@@ -54,11 +54,8 @@ const handleSubmit = async () => {
 onMounted(async () => {
   try {
     const id = role === "user" ? userId : companyId;
-    const response = await axios.get(
-      `/api/job/apply-history/${id}?role=${role}`
-    );
-
-    state.history = response.data.apply_history;
+    const response = await axios.get(`/api/jobs/apply/${id}?role=${role}`);
+    state.history = response.data.data;
   } catch (error) {
     console.error("Error fetching application history API", error);
   }
@@ -67,6 +64,7 @@ onMounted(async () => {
 
 <template>
   <div class="my-10 shadow-md sm:rounded-lg container-xl lg:container m-auto">
+    <!-- User History -->
     <table
       v-if="role === 'user'"
       class="w-full text-sm text-left text-gray-500"
@@ -81,7 +79,7 @@ onMounted(async () => {
         </p>
       </caption>
       <thead class="text-md text-gray-700 uppercase bg-gray-50">
-        <tr class="bg-gray-200">
+        <tr class="bg-gray-200 text-center">
           <th scope="col" class="px-6 py-4">No</th>
           <th scope="col" class="px-6 py-4">Job Title</th>
           <th scope="col" class="px-6 py-4">Type</th>
@@ -97,7 +95,7 @@ onMounted(async () => {
         <tr
           v-for="(history, index) in state.history"
           :key="index"
-          class="bg-white border-b"
+          class="bg-white border-b text-center"
         >
           <td class="px-6 py-4">{{ (index += 1) }}</td>
           <td class="px-6 py-4">{{ history.job_title }}</td>
@@ -128,9 +126,10 @@ onMounted(async () => {
       </tbody>
     </table>
 
+    <!-- Company History -->
     <table
       v-if="role === 'company'"
-      class="w-full text-sm text-left text-gray-500"
+      class="w-auto text-sm text-left text-gray-500"
     >
       <caption
         class="p-5 text-lg font-semibold text-left text-gray-900 bg-white"
@@ -142,7 +141,7 @@ onMounted(async () => {
         </p>
       </caption>
       <thead class="text-md text-gray-700 uppercase bg-gray-50">
-        <tr class="bg-gray-200">
+        <tr class="bg-gray-200 text-center">
           <th scope="col" class="px-6 py-4">No</th>
           <th scope="col" class="px-6 py-4">Job Title</th>
           <th scope="col" class="px-6 py-4">Type</th>
@@ -159,7 +158,7 @@ onMounted(async () => {
         <tr
           v-for="(history, index) in state.history"
           :key="index"
-          class="bg-white border-b"
+          class="bg-white border-b text-center"
         >
           <td class="px-6 py-4">{{ (index += 1) }}</td>
           <td class="px-6 py-4">{{ history.job_title }}</td>

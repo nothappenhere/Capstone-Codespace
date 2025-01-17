@@ -1,12 +1,12 @@
-import db from "../db/connection.js";
+import db from "../config/database.js";
 
 /**
  * @desc   Getting all jobs with pagination and filtering
  * @route  GET /jobs
  */
-export const getAllJobs = (req, res, next) => {
+export const getAllJobs = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 9;
   const offset = (page - 1) * limit;
 
   const { location, type } = req.query;
@@ -27,154 +27,137 @@ export const getAllJobs = (req, res, next) => {
   query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
   params.push(limit, offset);
 
-  db.query(query, params, (err, result) => {
-    if (err) {
-      console.error("Database Error:", err.message);
-      return res.status(500).json({ error: "Internal Server Error" });
+  try {
+    const [result] = await db.promise().query(query, params);
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "No jobs found.",
+      });
     }
 
     res.status(200).json({
-      jobs: result,
+      message: "All available jobs.",
+      data: result,
       pagination: { page, limit },
     });
-  });
+  } catch (error) {
+    console.error("Error when getting a job list:", error);
+    next(error);
+  }
 };
 
 /**
  * @desc   Getting single job with associated company based on job ID
- * @route  GET /job/:id
+ * @route  GET /jobs/:id
  */
-export const getSingleJob = (req, res, next) => {
+export const getSingleJob = async (req, res, next) => {
   const id = parseInt(req.params.id);
 
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "Invalid job ID" });
+  if (isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: "Invalid job ID." });
   }
 
-  db.query(
-    `SELECT jobs.*,
-    companies.name AS company_name,
-	  companies.description AS company_description,
-    companies.email AS company_email,
-    companies.location AS company_location
-      FROM jobs
-      JOIN companies ON jobs.company_id = companies.company_id
-      WHERE jobs.job_id = ? LIMIT 1`,
-    [id],
-    (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
+  try {
+    const [result] = await db.promise().query(
+      `SELECT jobs.*,
+      companies.name AS company_name,
+      companies.description AS company_description,
+      companies.email AS company_email,
+      companies.location AS company_location
+        FROM jobs
+        JOIN companies ON jobs.company_id = companies.company_id
+        WHERE jobs.job_id = ? LIMIT 1`,
+      [id]
+    );
 
-      if (result.length === 0) {
-        return res.status(404).json({ message: "Job not found" });
-      }
-
-      // Menggabungkan data pekerjaan dan perusahaan dalam satu objek
-      const jobData = result[0];
-      const job = {
-        job_id: jobData.job_id,
-        title: jobData.title,
-        type: jobData.type,
-        description: jobData.description,
-        location: jobData.location,
-        salary: jobData.salary,
-        company: {
-          company_id: jobData.company_id,
-          name: jobData.company_name,
-          description: jobData.company_description,
-          email: jobData.company_email,
-          location: jobData.company_location,
-        },
-      };
-
-      res.status(200).json({ job });
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "No jobs found.",
+      });
     }
-  );
+
+    res.status(200).json({
+      message: `Get a job with id ${id}`,
+      data: result[0],
+    });
+  } catch (error) {
+    console.error("Error when getting a job list:", error);
+    next(error);
+  }
 };
 
 /**
  * @desc   User applying for a job
- * @route  POST /apply
+ * @route  POST /jobs/apply
  */
-export const applyJob = (req, res, next) => {
+export const applyJob = async (req, res, next) => {
   const { job_id, user_id } = req.body;
 
   // Validasi input
-  if (!job_id || !user_id) {
-    return res.status(400).json({ error: "Job ID and User ID are required" });
+  if (!job_id || !user_id || isNaN(job_id) || isNaN(user_id)) {
+    return res
+      .status(400)
+      .json({ error: "Valid Job ID and User ID are required." });
   }
 
-  // Cek apakah user sudah melamar pekerjaan ini
-  db.query(
-    "SELECT * FROM job_applications WHERE job_id = ? AND user_id = ? LIMIT 1",
-    [job_id, user_id],
-    (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
-
-      // Jika sudah ada aplikasi untuk job_id yang sama
-      if (result.length > 0) {
-        return res
-          .status(400)
-          .json({ message: "You have already applied for this job." });
-      }
-
-      // Ambil company_id dari tabel jobs
-      db.query(
-        "SELECT company_id FROM jobs WHERE job_id = ? LIMIT 1",
-        [job_id],
-        (err, result) => {
-          if (err) {
-            console.error("Database Error:", err.message);
-            return res.status(500).json({ error: "Internal Server Error" });
-          }
-
-          if (result.length === 0) {
-            return res.status(404).json({ error: "Job not found" });
-          }
-
-          const company_id = result[0].company_id;
-
-          // Insert data ke tabel job_applications
-          db.query(
-            "INSERT INTO job_applications (job_id, company_id, user_id, status) VALUES (?, ?, ?, ?)",
-            [job_id, company_id, user_id, "pending"],
-            (err, result) => {
-              if (err) {
-                console.error("Database Error:", err.message);
-                return res.status(500).json({ error: "Internal Server Error" });
-              }
-
-              res.status(200).json({
-                message: "Successfully applied for the job",
-                application_id: result.insertId,
-              });
-            }
-          );
-        }
+  try {
+    // Cek apakah user sudah melamar pekerjaan
+    const [existingJob] = await db
+      .promise()
+      .query(
+        "SELECT * FROM job_applications WHERE job_id = ? AND user_id = ? LIMIT 1",
+        [job_id, user_id]
       );
+
+    if (existingJob.length > 0) {
+      return res.status(400).json({
+        error: `User with id ${user_id} have already applied for this job id ${job_id}.`,
+      });
     }
-  );
+
+    // Ambil company_id dari tabel jobs
+    const [companyId] = await db
+      .promise()
+      .query("SELECT company_id FROM jobs WHERE job_id = ? LIMIT 1", [job_id]);
+
+    if (companyId.length === 0) {
+      return res.status(404).json({ error: "No jobs found." });
+    }
+    const company_id = companyId[0].company_id;
+
+    // Simpan aplikasi pekerjaan
+    const [result] = await db
+      .promise()
+      .query(
+        "INSERT INTO job_applications (job_id, company_id, user_id, status) VALUES (?, ?, ?, ?)",
+        [job_id, company_id, user_id, "pending"]
+      );
+
+    res.status(200).json({
+      message: `Successfully applied for the job id ${job_id}`,
+      application_id: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error when applying a job:", error);
+    next(error);
+  }
 };
 
 /**
  * @desc   Application history for user or company
- * @route  GET /job/apply-history/:id
+ * @route  GET /jobs/apply/:id
  */
-export const getApplicationHistory = (req, res) => {
+export const getApplicationHistory = async (req, res, next) => {
   const id = parseInt(req.params.id);
-  const role = req.query.role; // Ambil role dari query parameter
+  const role = req.query.role;
 
-  if (isNaN(id)) {
-    return res.status(400).json({ error: "Invalid ID" });
+  if (isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: "Invalid User ID." });
   }
 
   if (!role) {
-    return res.status(400).json({ error: "Role is required" });
+    return res.status(400).json({ error: "Role is required." });
   }
 
   let query = "";
@@ -225,63 +208,147 @@ export const getApplicationHistory = (req, res) => {
     `;
     queryParams = [id];
   } else {
-    return res.status(400).json({ error: "Invalid role" });
+    return res.status(400).json({ error: "Invalid role." });
   }
 
-  db.query(query, queryParams, (err, results) => {
-    if (err) {
-      console.error("Database Error:", err.message);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
+  try {
+    const [results] = await db.promise().query(query, queryParams);
 
     if (results.length === 0) {
       return res.status(404).json({
-        message: `No applications found for the given ID and role`,
+        error: `No applications found for the given id ${id} and role ${role}.`,
       });
     }
 
-    res.status(200).json({ apply_history: results });
-  });
+    res.status(200).json({
+      message: `Applications history for user id ${id} and role ${role}.`,
+      data: results,
+    });
+  } catch (error) {
+    console.error("Error when searching for job history:", error);
+    next(error);
+  }
 };
 
 /**
  * @desc   Adding a new job
- * @route  POST /job/add
+ * @route  POST /jobs/add
  */
-export const addJob = (req, res, next) => {
+export const addingJob = async (req, res, next) => {
   const { title, type, description, location, salary, company_id } = req.body;
 
-  // Validasi data input
+  // Validasi Input
   if (!title || !type || !description || !location || !salary || !company_id) {
-    return res
-      .status(400)
-      .json({ error: "All fields are required, including company ID." });
+    return res.status(400).json({ error: "All fields are required." });
   }
 
-  // Jalankan query insert pekerjaan
-  db.query(
-    "INSERT INTO jobs (title, type, description, location, salary, company_id) VALUES (?, ?, ?, ?, ?, ?)",
-    [title, type, description, location, salary, company_id],
-    (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res.status(500).json({ error: "Failed to add job." });
-      }
+  if (isNaN(salary) || salary <= 0) {
+    return res.status(400).json({ error: "Salary must be a positive number." });
+  }
 
-      // Kirimkan respon jika query berhasil
-      res.status(200).json({
-        message: "Job successfully added",
-        id: result.insertId, // ID dari pekerjaan yang baru ditambahkan
-      });
+  try {
+    // Periksa apakah company_id valid
+    const [companyExists] = await db
+      .promise()
+      .query("SELECT * FROM companies WHERE company_id = ? LIMIT 1", [
+        company_id,
+      ]);
+
+    if (companyExists.length === 0) {
+      return res
+        .status(404)
+        .json({ error: `Company with ID ${company_id} not found.` });
     }
-  );
+
+    // Tambahkan pekerjaan baru
+    const [result] = await db
+      .promise()
+      .query(
+        "INSERT INTO jobs (title, type, description, location, salary, company_id) VALUES (?, ?, ?, ?, ?, ?)",
+        [title, type, description, location, salary, company_id]
+      );
+
+    res.status(201).json({
+      message: `Successfully added a new job.`,
+      job_id: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error when attempting to add a new job:", error);
+    next(error);
+  }
 };
 
 /**
  * @desc   Update job by ID
- * @route  PUT /job/update/:id
+ * @route  PUT /jobs/update/:id
  */
-export const updateJob = (req, res, next) => {
+export const updateJob = async (req, res, next) => {
+  const id = parseInt(req.params.id);
+  const { title, type, description, location, salary } = req.body;
+
+  // Validasi ID
+  if (isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: "Invalid Job ID." });
+  }
+
+  // Validasi Input
+  if (!title && !type && !description && !location && !salary) {
+    return res
+      .status(400)
+      .json({ error: "At least one field is required to update." });
+  }
+
+  if (salary && (isNaN(salary) || salary <= 0)) {
+    return res.status(400).json({ error: "Salary must be a positive number." });
+  }
+
+  try {
+    // Periksa apakah pekerjaan dengan ID tersebut ada
+    const [jobExists] = await db
+      .promise()
+      .query("SELECT * FROM jobs WHERE job_id = ? LIMIT 1", [id]);
+
+    if (jobExists.length === 0) {
+      return res.status(404).json({ error: `Job with ID ${id} not found.` });
+    }
+
+    // Build Query Dinamis
+    const fields = [];
+    const values = [];
+    if (title) fields.push("title = ?"), values.push(title);
+    if (type) fields.push("type = ?"), values.push(type);
+    if (description) fields.push("description = ?"), values.push(description);
+    if (location) fields.push("location = ?"), values.push(location);
+    if (salary) fields.push("salary = ?"), values.push(salary);
+
+    // Tambahkan updated_at
+    fields.push("updated_at = NOW()");
+    values.push(id);
+
+    const query = `UPDATE jobs SET ${fields.join(", ")} WHERE job_id = ?`;
+
+    // Eksekusi Query
+    const [result] = await db.promise().query(query, values);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ error: "No changes were made." });
+    }
+
+    res.status(200).json({
+      message: "Job details updated successfully.",
+      job_id: id,
+    });
+  } catch (error) {
+    console.error("Error when updating job details:", error);
+    next(error);
+  }
+};
+
+/**
+ * @desc   Delete job by ID
+ * @route  DELETE /jobs/delete/:id
+ */
+export const deleteJob = async (req, res, next) => {
   const jobId = parseInt(req.params.id);
 
   // Validasi ID
@@ -289,96 +356,75 @@ export const updateJob = (req, res, next) => {
     return res.status(400).json({ error: "Invalid Job ID" });
   }
 
-  // Data yang akan diperbarui
-  const { title, type, description, location, salary } = req.body;
+  try {
+    // Periksa apakah pekerjaan dengan ID tersebut ada
+    const [job] = await db
+      .promise()
+      .query("SELECT * FROM jobs WHERE job_id = ?", [jobId]);
 
-  // Validasi data input
-  if (!title || !type || !description || !location || !salary) {
-    return res.status(400).json({ error: "All fields are required." });
-  }
-
-  // Query untuk memperbarui pekerjaan
-  const updateJobQuery = `
-    UPDATE jobs
-    SET title = ?, type = ?, description = ?, location = ?, salary = ?, updated_at = NOW()
-    WHERE job_id = ?;
-  `;
-
-  // Jalankan query update pekerjaan
-  db.query(
-    updateJobQuery,
-    [title, type, description, location, salary, jobId],
-    (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res.status(500).json({ error: "Failed to update job details" });
-      }
-
-      res.status(200).json({ msg: "Job successfully updated", id: jobId });
-    }
-  );
-};
-
-/**
- * @desc   Delete job by ID
- * @route  DELETE /job/delete/:id
- */
-export const deleteJob = (req, res, next) => {
-  const jobId = parseInt(req.params.id);
-
-  if (isNaN(jobId) || jobId <= 0) {
-    return res.status(400).json({ error: "Invalid Job ID" });
-  }
-
-  db.query("SELECT * FROM jobs WHERE job_id = ?", [jobId], (err, results) => {
-    if (err) {
-      console.error("Database Error:", err.message);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
-
-    if (results.length === 0) {
+    if (job.length === 0) {
       return res.status(404).json({ error: "Job not found" });
     }
 
-    db.query("DELETE FROM jobs WHERE job_id = ?", [jobId], (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
+    // Hapus pekerjaan
+    const [result] = await db
+      .promise()
+      .query("DELETE FROM jobs WHERE job_id = ?", [jobId]);
 
-      res.status(200).json({ msg: "Job successfully deleted" });
-    });
-  });
+    // Periksa apakah penghapusan berhasil
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ error: "Failed to delete the job" });
+    }
+
+    res.status(200).json({ message: "Job successfully deleted" });
+  } catch (error) {
+    console.error("Error when deleting job:", error);
+    next(error);
+  }
 };
 
 /**
  * @desc   Update job application status
- * @route  PUT /job/update-status
+ * @route  PUT /jobs/update/status
  */
 export const updateJobStatus = async (req, res, next) => {
   const { id, status } = req.body;
 
   // Validasi data input
   if (!id || !status) {
-    return res.status(400).json({ message: "Invalid data provided" });
+    return res.status(400).json({ error: "Invalid data provided" });
   }
 
-  // Query database untuk memperbarui status
-  db.query(
-    "UPDATE job_applications SET status = ? WHERE job_id = ?",
-    [status, id],
-    (err, result) => {
-      if (err) {
-        console.error("Database Error:", err.message);
-        return res.status(500).json({ error: "Failed to update job status" });
-      }
+  try {
+    // Periksa apakah job application dengan ID tersebut ada
+    const [application] = await db
+      .promise()
+      .query("SELECT * FROM job_applications WHERE job_id = ?", [id]);
 
-      // Periksa apakah ada baris yang diperbarui
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Job application not found" });
-      }
-
-      res.status(200).json({ message: "Job status updated successfully" });
+    if (application.length === 0) {
+      return res.status(404).json({ error: "Job application not found" });
     }
-  );
+
+    // Update status job application
+    const [result] = await db
+      .promise()
+      .query("UPDATE job_applications SET status = ? WHERE job_id = ?", [
+        status,
+        id,
+      ]);
+
+    // Periksa apakah pembaruan berhasil
+    if (result.affectedRows === 0) {
+      return res
+        .status(400)
+        .json({ error: "Failed to update job application status" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Job application status updated successfully" });
+  } catch (error) {
+    console.error("Error when updating job application status:", error);
+    next(error);
+  }
 };

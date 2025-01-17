@@ -14,8 +14,10 @@ const resetPass = reactive({
 
 const toast = useToast();
 
-const checkEmail = async () => {
-  if (!resetPass.email.includes("@")) {
+const checkEmailExist = async () => {
+  if (!resetPass.email) {
+    return toast.error("Email fields are required.");
+  } else if (!resetPass.email.includes("@")) {
     return toast.error("Invalid email format, must be include '@' sign.");
   }
 
@@ -23,23 +25,26 @@ const checkEmail = async () => {
     const response = await axios.post("/api/check-email", {
       email: resetPass.email,
     });
+
     if (response.data.exists) {
       toast.success("Email is valid, please enter your new password.");
       resetPass.isEmailValid = true;
     } else {
-      toast.info("If the email exists, you will receive further instructions.");
+      toast.info("Invalid credentials. Please check your email address.");
     }
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message); // Pesan error dari server
+    if (error.response && error.response.data.error) {
+      toast.error(error.response.data.error); // Pesan error dari server
     } else {
-      toast.error("Invalid credential!");
+      toast.error("Something went wrong, please try again.");
     }
   }
 };
 
 const handleSubmit = async () => {
-  if (!resetPass.email.includes("@")) {
+  if (!resetPass.email || !resetPass.password) {
+    return toast.error("All fields are required.");
+  } else if (!resetPass.email.includes("@")) {
     return toast.error("Invalid email format, must be include '@' sign.");
   }
   if (resetPass.password.length < 8) {
@@ -54,13 +59,13 @@ const handleSubmit = async () => {
   try {
     await axios.post("/api/reset-password", newCredential);
 
-    toast.success("Password reset successfully.");
     router.push("/login");
+    toast.success("Password reset successfully.");
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message); // Pesan error dari server
+    if (error.response && error.response.data.error) {
+      toast.error(error.response.data.error); // Pesan error dari server
     } else {
-      toast.error("Error resetting password, please try again.");
+      toast.error("Something went wrong, please try again.");
     }
   } finally {
     resetPass.email = "";
@@ -105,15 +110,17 @@ const handleSubmit = async () => {
             />
           </div>
 
+          <!-- Email Input -->
           <button
             v-if="!resetPass.isEmailValid"
             class="bg-green-600 hover:bg-green-700 rounded-sm text-white font-bold py-4 px-4 w-full"
             type="button"
-            @click="checkEmail"
+            @click="checkEmailExist"
           >
             Check Email
           </button>
 
+          <!-- Password Input -->
           <button
             v-else
             class="bg-green-600 hover:bg-green-700 rounded-sm text-white font-bold py-4 px-4 w-full"

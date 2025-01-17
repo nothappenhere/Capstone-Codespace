@@ -13,9 +13,12 @@ const login = reactive({
 
 const handleSubmit = async () => {
   const toast = useToast();
-  if (!login.email.includes("@")) {
+  if (!login.email || !login.password) {
+    return toast.error("All fields are required.");
+  } else if (!login.email.includes("@")) {
     return toast.error("Invalid email format, must be include '@' sign.");
   }
+
   if (login.password.length < 8) {
     return toast.error("Password must be at least 8 characters long.");
   }
@@ -27,13 +30,12 @@ const handleSubmit = async () => {
 
   try {
     const response = await axios.post("/api/login", newLogin);
-    const { token, user } = response.data; // Ambil token dan user dari respons
-    localStorage.setItem("authToken", token); // Simpan token di localStorage
-    localStorage.setItem("userId", user.id); // Simpan id user di localStorage
-    localStorage.setItem("UserFullname", user.full_name); // Simpan nama lengkap user di localStorage
-    localStorage.setItem("userRole", user.role); // Simpan role user di localStorage
+    const user = response.data.data;
 
-    toast.success("Sign in Successfully");
+    localStorage.setItem("authToken", response.data.token); // Simpan token di localStorage
+    localStorage.setItem("userId", user.id); // Simpan id user di localStorage
+    localStorage.setItem("UserFullName", user.full_name); // Simpan nama lengkap user di localStorage
+    localStorage.setItem("userRole", user.role); // Simpan role user di localStorage
 
     // Arahkan ke halaman sesuai role
     if (user.role === "admin") {
@@ -41,15 +43,18 @@ const handleSubmit = async () => {
     } else if (user.role === "user") {
       router.push(`/dashboard/user`);
     } else if (user.role === "company") {
-      localStorage.setItem("companyId", user.company_id);
+      localStorage.setItem("companyId", user.company_id); // Simpan id company di localStorage
       localStorage.setItem("userEmail", user.email); // Simpan email user di localStorage
+
       router.push("/dashboard/company/company-details");
     } else {
       router.push("/"); // Default jika role tidak dikenali
     }
+
+    toast.success("Sign in Successfully");
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message); // Pesan error dari server
+    if (error.response && error.response.data.error) {
+      toast.error(error.response.data.error); // Pesan error dari server
     } else {
       toast.error("Invalid credentials, plese check your email or password.");
     }

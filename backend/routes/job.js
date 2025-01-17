@@ -6,7 +6,7 @@ import {
   getSingleJob,
   applyJob,
   getApplicationHistory,
-  addJob,
+  addingJob,
   updateJob,
   deleteJob,
   updateJobStatus,
@@ -17,29 +17,33 @@ import {
 } from "../middlewares/autenticateUserAndRole.js";
 
 //* GET all jobs with pagination and filtering
-// Route untuk mendapatkan semua pekerjaan (jobs) dengan paginasi dan filter
+// Route untuk mendapatkan semua pekerjaan (jobs)
 router.get("/jobs", getAllJobs);
 
 //* GET a single job by ID
-// Route untuk mendapatkan pekerjaan berdasarkan ID
-router.get("/job/:id", getSingleJob);
+// Route untuk mendapatkan pekerjaan
+router.get("/jobs/:id", getSingleJob);
 
 //* POST user applying for a job
-// Route untuk melakukan pelamaran pekerjaan
-router.post("/apply", applyJob);
+// Route untuk user melakukan pelamaran pekerjaan
+router.post("/jobs/apply", applyJob);
 
 //* GET a user's application history
-// Route untuk mendapatkan riwayat lamaran pekerjaan pengguna
-router.get("/job/apply-history/:id", getApplicationHistory);
+// Route untuk user mendapatkan riwayat lamaran pekerjaan
+router.get("/jobs/apply/:id", getApplicationHistory);
 
 //* POST add a new job
 // Route untuk perusahaan dapat menambahkan pekerjaan baru
-router.post("/job/add", [authenticateUser, authorizeRole(["company"])], addJob);
+router.post(
+  "/jobs/add",
+  [authenticateUser, authorizeRole(["company"])],
+  addingJob
+);
 
 //* PUT update job by ID
-// Route untuk perusahaan memperbarui pekerjaan berdasarkan ID
+// Route untuk perusahaan memperbarui data pekerjaan
 router.put(
-  "/job/update/:id",
+  "/jobs/update/:id",
   [authenticateUser, authorizeRole(["company"])],
   updateJob
 );
@@ -47,7 +51,7 @@ router.put(
 //* DELETE job by ID
 // Route untuk perusahaan dapat menghapus pekerjaan berdasarkan ID
 router.delete(
-  "/job/delete/:id",
+  "/jobs/delete/:id",
   [authenticateUser, authorizeRole(["company"])],
   deleteJob
 );
@@ -55,7 +59,7 @@ router.delete(
 //* PUT update job status
 // Route untuk perusahaan memperbarui status pekerjaan pelamar
 router.put(
-  "/job/update-status",
+  "/jobs/update/status",
   [authenticateUser, authorizeRole(["company"])],
   updateJobStatus
 );

@@ -26,7 +26,6 @@ app.use("/", [auth, jobs]);
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = 8000;
-app.listen(PORT, () => {
-  console.log(`Server running in http://localhost:${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server running in http://localhost:${process.env.PORT}`);
 });

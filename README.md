@@ -8,7 +8,7 @@ Aplikasi ini adalah sebuah sistem backend yang dibangun menggunakan [Express.js]
 npm install
 ```
 
-### Run the Server before Development
+### Run Server before Development
 
 ```sh
 npm run server

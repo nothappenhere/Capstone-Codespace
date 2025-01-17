@@ -5,18 +5,21 @@ import router from "@/router";
 import { useToast } from "vue-toastification";
 import { ref } from "vue";
 
+const toast = useToast();
+
 const userId = ref(localStorage.getItem("userId"));
-const userFullname = ref(localStorage.getItem("UserFullname"));
+const fullName = ref(localStorage.getItem("UserFullName"));
 const email = ref(localStorage.getItem("userEmail"));
 
+console.info(userId.value);
+
 const form = reactive({
-  name: userFullname.value,
+  name: fullName.value,
   description: "",
   email: email.value,
   location: "",
 });
 
-const toast = useToast();
 const handleSubmit = async () => {
   if (!form.name || !form.description || !form.email || !form.location) {
     toast.error("All fields are required.");
@@ -33,7 +36,7 @@ const handleSubmit = async () => {
 
   try {
     const response = await axios.post(
-      `/api/company/details/add`,
+      `/api/company/details`,
       companyDetails
     );
 
@@ -42,22 +45,21 @@ const handleSubmit = async () => {
       router.push(`/dashboard/company`);
     } else {
       toast.error(
-        "Failed to adding company details, please try again in minutes."
+        "Something went wrong, please try again."
       );
     }
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message); // Pesan error dari server
+    if (error.response && error.response.data.error) {
+      toast.error(error.response.data.error); // Pesan error dari server
     } else {
-      console.error("Error fetching API", error);
-      toast.error("Company details Was Not Added");
+      toast.error("Something went wrong, please try again.");
     }
   }
 };
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`/api/company-status/${userId.value}`);
+    const response = await axios.get(`/api/company/details/${userId.value}`);
 
     if (response.data && response.data.isComplete) {
       router.push(`/dashboard/company`);
@@ -67,8 +69,8 @@ onMounted(async () => {
       );
     }
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message); // Pesan error dari server
+    if (error.response && error.response.data.error) {
+      toast.info(error.response.data.error); // Pesan error dari server
     } else {
       console.error("Error fetching API", error);
     }
@@ -147,7 +149,7 @@ onMounted(async () => {
               class="bg-[#076d0d] hover:bg-[#0b5c11] text-white font-bold py-3 px-4 rounded-sm w-full focus:outline-none focus:shadow-outline mt-2"
               type="submit"
             >
-              Add Details
+              Add Company Details
             </button>
           </div>
         </form>

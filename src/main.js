@@ -3,12 +3,10 @@ import router from "@/router";
 
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-
 import axios from "axios";
 
 import { createApp } from "vue";
 import App from "@/App.vue";
-
 const app = createApp(App);
 
 // Set Authorization header untuk setiap request axios

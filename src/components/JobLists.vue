@@ -1,10 +1,12 @@
 <script setup>
 import { reactive, defineProps, onMounted } from "vue";
 import { RouterLink, useRoute } from "vue-router";
+import { useToast } from "vue-toastification";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 import axios from "axios";
 
 import JobCardLists from "./JobCardLists.vue";
+const toast = useToast();
 
 const isActiveLink = (routePath) => {
   const route = useRoute();
@@ -25,11 +27,14 @@ const state = reactive({
 onMounted(async () => {
   try {
     const response = await axios.get("/api/jobs");
-    state.jobs = response.data.jobs;
-
+    state.jobs = response.data.data;
     state.isLoading = false;
   } catch (error) {
-    console.error("Error fetching Jobs API", error);
+    if (error.response && error.response.data.error) {
+      toast.error(error.response.data.error); // Pesan error dari server
+    } else {
+      console.error("Error fetching Jobs API", error);
+    }
   }
 });
 </script>

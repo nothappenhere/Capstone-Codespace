@@ -29,15 +29,15 @@ router.post("/register/:role", validateRegister, registerUser);
 router.post("/check-email", checkEmail, checkEmailExist);
 
 //* POST reset password
-// Route untuk mereset password user
+// Route untuk mereset password
 router.post("/reset-password", validateResetPassword, resetPasswordUser);
 
 //* GET company details status
 // Route untuk memeriksa apakah detail perusahaan sudah diisi
-router.get("/company-status/:user_id", checkCompanyDetailStatus);
+router.get("/company/details/:id", checkCompanyDetailStatus);
 
 //* POST Add company details
 // Route untuk menambah detail perusahaan jika belum lengkap
-router.post("/company/details/add", addCompanyDetails);
+router.post("/company/details", addCompanyDetails);
 
 export default router;

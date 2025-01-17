@@ -15,17 +15,21 @@ const register = reactive({
   full_name: "",
   email: "",
   password: "",
-  role: isActiveLink("/register/user") ? "user" : "company",
+  role: isActiveLink("/register/user")
+    ? "user"
+    : isActiveLink("/register/company")
+    ? "company"
+    : null,
 });
 
 const handleSubmit = async () => {
   const toast = useToast();
-
-  if (register.full_name === "") {
-    return toast.error("Full name cannot be empty");
+  if (!register.full_name || !register.email || !register.password) {
+    return toast.error("All fields are required.");
   } else if (register.full_name.length < 3) {
-    return toast.error("Full name must be at least 3 characters");
+    return toast.error("Full Name must be at least 3 characters.");
   }
+
   if (!register.email.includes("@")) {
     return toast.error("Invalid email format, must be include '@' sign.");
   }
@@ -41,10 +45,15 @@ const handleSubmit = async () => {
   };
 
   try {
-    await axios.post(`/api/register/${register.role}`, newRegister);
+    const response = await axios.post(
+      `/api/register/${register.role}`,
+      newRegister
+    );
 
-    toast.success("Registration Successfully");
-    router.push("/login");
+    if (response.data) {
+      router.push("/login");
+      toast.success("Registration Successfully");
+    }
   } catch (error) {
     if (error.response && error.response.data.error) {
       toast.error(error.response.data.error); // Pesan error dari server

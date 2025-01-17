@@ -5,6 +5,7 @@ import router from "@/router";
 import { useToast } from "vue-toastification";
 
 const userId = ref(localStorage.getItem("companyId"));
+// console.log(userId.value);
 
 const form = reactive({
   title: "",
@@ -37,20 +38,19 @@ const handleSubmit = async () => {
   };
 
   try {
-    const response = await axios.post(`/api/job/add`, newJob);
+    const response = await axios.post(`/api/jobs/add`, newJob);
 
-    if (response.data && response.data.id) {
+    if (response.data && response.data.job_id) {
+      router.push(`/dashboard/company/job/${response.data.job_id}`);
       toast.success("Job Added Successfully");
-      router.push(`/dashboard/company/job/${response.data.id}`);
     } else {
       toast.error("Failed to adding job, please try again in minutes.");
     }
   } catch (error) {
-    if (error.response && error.response.data.message) {
-      toast.error(error.response.data.message); // Pesan error dari server
+    if (error.response && error.response.data.error) {
+      toast.info(error.response.data.error); // Pesan error dari server
     } else {
-      console.error("Error fetching Job API", error);
-      toast.error("Job Was Not Added");
+      console.error("Error fetching Jobs API", error);
     }
   }
 };
